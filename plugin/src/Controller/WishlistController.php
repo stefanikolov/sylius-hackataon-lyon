@@ -87,6 +87,18 @@ final class WishlistController extends AbstractController
             return $this->redirectBack($request);
         }
 
+        // On the product page the customer picks options (size, colour...). Those are sent as options[code]=valueCode
+        // and decide which variant is saved; the variant id in the URL is only the default one.
+        $selectedOptions = $request->request->all('options');
+        if ([] !== $selectedOptions) {
+            $variant = $this->resolveVariantByOptions($variant, $selectedOptions);
+            if (null === $variant) {
+                $this->addFlash('error', 'hackathon_wishlist.flash.not_found');
+
+                return $this->redirectBack($request);
+            }
+        }
+
         $wishlist = $this->wishlistProvider->getWishlist(create: true);
         if ($wishlist->addVariant($variant)) {
             $this->entityManager->flush();
@@ -197,6 +209,41 @@ final class WishlistController extends AbstractController
             && null !== $product
             && $product->isEnabled()
             && $this->availabilityChecker->isStockAvailable($variant);
+    }
+
+    /**
+     * Finds the enabled variant of the same product whose option values match the selection.
+     *
+     * @param array<array-key, mixed> $selectedOptions option code => option value code
+     */
+    private function resolveVariantByOptions(ProductVariantInterface $variant, array $selectedOptions): ?ProductVariantInterface
+    {
+        $product = $variant->getProduct();
+        if (null === $product) {
+            return null;
+        }
+
+        foreach ($product->getEnabledVariants() as $candidate) {
+            $values = [];
+            foreach ($candidate->getOptionValues() as $optionValue) {
+                $values[$optionValue->getOptionCode()] = $optionValue->getCode();
+            }
+
+            $matches = true;
+            foreach ($selectedOptions as $optionCode => $valueCode) {
+                if (!is_string($valueCode) || ($values[(string) $optionCode] ?? null) !== $valueCode) {
+                    $matches = false;
+
+                    break;
+                }
+            }
+
+            if ($matches) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     /** Goes back to the page the visitor came from, but only when it is on this same site. */

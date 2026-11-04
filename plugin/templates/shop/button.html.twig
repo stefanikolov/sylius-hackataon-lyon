@@ -13,4 +13,23 @@
             {% endif %}
         </button>
     </form>
+    {# Product page only: send the options picked in the add-to-cart form, so the chosen variant is saved. #}
+    <script>
+        (function () {
+            var form = document.currentScript.previousElementSibling;
+            form.addEventListener('submit', function () {
+                var cart = document.querySelector('form[name="sylius_shop_add_to_cart"]');
+                if (!cart) { return; }
+                form.querySelectorAll('input[data-wishlist-option]').forEach(function (input) { input.remove(); });
+                cart.querySelectorAll('select[data-option]').forEach(function (select) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'options[' + select.dataset.option + ']';
+                    input.value = select.value;
+                    input.setAttribute('data-wishlist-option', '');
+                    form.appendChild(input);
+                });
+            });
+        })();
+    </script>
 {% endif %}
