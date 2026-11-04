@@ -41,7 +41,52 @@ mark_app_sylius_wishlist_admin:
     prefix: '/%sylius_admin.path_name%'
 ```
 
+## API
+
+A JSON API for the same lists the storefront uses, under the Sylius shop API prefix. Import the routes in
+`config/routes/mark_app_sylius_wishlist_api.yaml`:
+
+```yaml
+mark_app_sylius_wishlist_api:
+    resource: "@MarkAppSyliusWishlistPlugin/config/routes/api.yaml"
+    prefix: '%sylius.security.api_shop_route%'
+```
+
+**Who you are.** A customer sends the Sylius JWT (`POST /api/v2/shop/customers/token` with `{"email", "password"}`) as
+`Authorization: Bearer <token>`. A guest sends the header `X-Wishlist-Token`; the token is returned in the body
+(`guestToken`) and in that header when the guest creates the first list. The storefront cookie is ignored by the API on
+purpose, so a website cannot act for a guest through the browser. A list of someone else answers `404`.
+
+| Method | Path | Result |
+|---|---|---|
+| `GET` | `/api/v2/shop/wishlists` | 200, `{"wishlists": [{id, name, public, itemsCount, ...}]}` |
+| `POST` | `/api/v2/shop/wishlists` `{"name"}` | 201 with the list and a `Location` header; 422 for an invalid name |
+| `GET` | `/api/v2/shop/wishlists/{id}` | 200 with the items (`productCode`, `name`, `variantCode`, `available`) |
+| `PATCH` | `/api/v2/shop/wishlists/{id}` `{"name"?, "public"?}` | 200; a public list also returns its `shareToken` |
+| `DELETE` | `/api/v2/shop/wishlists/{id}` | 204 |
+| `POST` | `/api/v2/shop/wishlists/{id}/items` `{"productCode", "variantCode"?}` | 201 added; 200 with `result` `already_in_list` or `variant_updated` |
+| `DELETE` | `/api/v2/shop/wishlists/{id}/items/{productCode}` | 204 |
+| `POST` | `/api/v2/shop/wishlists/{id}/items/{productCode}/move` `{"targetWishlistId"}` | 200 with `source` and `target` |
+
+Errors are `{"error": {"code", "message", "violations"?}}` with 401 (invalid token), 404, 422, 429 (rate limit) and 400
+(invalid JSON). Unavailable products stay in the response with `"available": false`.
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost/api/v2/shop/customers/token -H 'Content-Type: application/json' \
+  -d '{"email":"shop@example.com","password":"..."}' | jq -r .token)
+
+curl -s -X POST http://localhost/api/v2/shop/wishlists -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"name":"Birthday"}'
+curl -s -X POST http://localhost/api/v2/shop/wishlists/1/items -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"productCode":"MUG_SW"}'
+
+# a guest
+curl -s -i -X POST http://localhost/api/v2/shop/wishlists -H 'Content-Type: application/json' -d '{"name":"My Favorites"}'
+curl -s http://localhost/api/v2/shop/wishlists -H 'X-Wishlist-Token: <guestToken>'
+```
+
 ## Requirements
+
 
 - Sylius 2.0 or newer, PHP 8.2 or newer
 - `symfony/rate-limiter` (installed as a dependency of this plugin)
@@ -100,7 +145,7 @@ bin/console cache:clear
 | 1.0.0 (Stage 1) | `Version20261104150833` | the chosen variant on every item (existing items get the product's first variant) |
 | 2.0.0 (Stage 2) | `Version20261104170000` | several lists per guest; one entry per product per list (a list that held several variants of one product keeps the newest entry) |
 
-Version 3.0.0 (read-only administration) needs no migration; add the administration route import above.
+Versions 3.0.0 (administration) and 4.0.0 (API) need no migration; add the route imports described above.
 
 Migrations run in their own namespace, `MarkApp\SyliusWishlistPlugin\Migrations`, and are also reversible.
 

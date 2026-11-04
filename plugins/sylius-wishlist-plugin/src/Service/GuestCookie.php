@@ -14,11 +14,20 @@ final class GuestCookie
 {
     public const NAME = 'mark_app_wishlist';
 
+    /** Set as route default on the API routes. */
+    public const API_ATTRIBUTE = '_mark_app_wishlist_api';
+
+    public const API_HEADER = 'X-Wishlist-Token';
+
     private const LIFETIME = '+90 days';
 
     public function read(Request $request): ?string
     {
-        $value = $request->cookies->get(self::NAME);
+        // The API identifies a guest by header only. A browser sends cookies by itself, so accepting the cookie there
+        // would let any website act on the guest's lists.
+        $value = true === $request->attributes->get(self::API_ATTRIBUTE)
+            ? $request->headers->get(self::API_HEADER)
+            : $request->cookies->get(self::NAME);
 
         return \is_string($value) && '' !== $value ? $value : null;
     }

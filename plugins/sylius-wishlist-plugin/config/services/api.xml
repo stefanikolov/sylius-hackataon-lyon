@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container
+        xmlns="http://symfony.com/schema/dic/services"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
+>
+    <services>
+        <service id="MarkApp\SyliusWishlistPlugin\Api\WishlistSerializer">
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\ProductAvailability" />
+        </service>
+
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Api\WishlistsController" public="true">
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Api\WishlistSerializer" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="validator" />
+            <argument type="service" id="sylius.repository.product" />
+            <argument type="service" id="sylius.context.channel" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\ProductAvailability" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\GuestCookie" />
+            <tag name="controller.service_arguments" />
+        </service>
+
+        <service id="MarkApp\SyliusWishlistPlugin\EventListener\ApiExceptionListener">
+            <tag name="kernel.event_listener" event="kernel.exception" method="onKernelException" priority="10" />
+        </service>
+    </services>
+</container>

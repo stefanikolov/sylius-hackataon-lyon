@@ -1,0 +1,3 @@
+mark_app_sylius_wishlist_api:
+    resource: "@MarkAppSyliusWishlistPlugin/config/routes/api.yaml"
+    prefix: '%sylius.security.api_shop_route%'

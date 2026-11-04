@@ -50,6 +50,14 @@ final class WriteGuard
         }
     }
 
+    /**
+     * The API is stateless and authenticated by its token, so there is no CSRF token or bot trap; only the rate limit.
+     */
+    public function guardApiWrite(Request $request): void
+    {
+        $this->consume($this->writeLimiter, $request);
+    }
+
     public function guardGuestCreate(Request $request): void
     {
         $this->consume($this->guestCreateLimiter, $request);
