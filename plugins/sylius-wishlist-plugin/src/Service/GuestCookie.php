@@ -14,8 +14,8 @@ final class GuestCookie
 {
     public const NAME = 'mark_app_wishlist';
 
-    /** Set as route default on the API routes. */
-    public const API_ATTRIBUTE = '_mark_app_wishlist_api';
+    /** API Platform puts this on every request it serves, so it tells an API request from a storefront request. */
+    public const API_ATTRIBUTE = '_api_resource_class';
 
     public const API_HEADER = 'X-Wishlist-Token';
 
@@ -25,7 +25,7 @@ final class GuestCookie
     {
         // The API identifies a guest by header only. A browser sends cookies by itself, so accepting the cookie there
         // would let any website act on the guest's lists.
-        $value = true === $request->attributes->get(self::API_ATTRIBUTE)
+        $value = $request->attributes->has(self::API_ATTRIBUTE)
             ? $request->headers->get(self::API_HEADER)
             : $request->cookies->get(self::NAME);
 

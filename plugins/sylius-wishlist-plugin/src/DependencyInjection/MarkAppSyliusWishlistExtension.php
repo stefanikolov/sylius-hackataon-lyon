@@ -34,6 +34,9 @@ final class MarkAppSyliusWishlistExtension extends AbstractResourceExtension imp
 
         $this->prependDoctrineMigrations($container);
 
+        // The API resources of the wishlist live in the plugin; API Platform finds them through this mapping path.
+        $container->prependExtensionConfig('api_platform', ['mapping' => ['paths' => [__DIR__ . '/../Api/Resource']]]);
+
         // Limiters protect the write endpoints and the token lookups against bots and token guessing.
         $container->prependExtensionConfig('framework', [
             'rate_limiter' => [

@@ -4,44 +4,34 @@ declare(strict_types=1);
 
 namespace MarkApp\SyliusWishlistPlugin\Api;
 
+use MarkApp\SyliusWishlistPlugin\Api\Resource\WishlistResource;
 use MarkApp\SyliusWishlistPlugin\Entity\WishlistInterface;
 use MarkApp\SyliusWishlistPlugin\Entity\WishlistItemInterface;
 use MarkApp\SyliusWishlistPlugin\Service\ProductAvailability;
 
 /**
- * The JSON shape of a wishlist. Secret tokens are never part of it.
+ * Builds the API view of a wishlist. Secret tokens are never part of it.
  */
-final class WishlistSerializer
+final class WishlistResourceFactory
 {
     public function __construct(private readonly ProductAvailability $productAvailability)
     {
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function summary(WishlistInterface $wishlist): array
+    public function create(WishlistInterface $wishlist): WishlistResource
     {
-        return [
-            'id' => $wishlist->getId(),
-            'name' => $wishlist->getName(),
-            'public' => $wishlist->isPublic(),
-            'itemsCount' => $wishlist->getItems()->count(),
-            'createdAt' => $wishlist->getCreatedAt()->format(\DATE_ATOM),
-            'updatedAt' => $wishlist->getUpdatedAt()->format(\DATE_ATOM),
-        ];
-    }
+        $resource = new WishlistResource();
+        $resource->id = $wishlist->getId();
+        $resource->name = $wishlist->getName();
+        $resource->public = $wishlist->isPublic();
+        $resource->itemsCount = $wishlist->getItems()->count();
+        $resource->createdAt = $wishlist->getCreatedAt()->format(\DATE_ATOM);
+        $resource->updatedAt = $wishlist->getUpdatedAt()->format(\DATE_ATOM);
+        // The share token is the public part of a public list, so the owner may hand it out.
+        $resource->shareToken = $wishlist->isPublic() ? $wishlist->getShareToken() : null;
+        $resource->items = array_map($this->item(...), $wishlist->getItems()->toArray());
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function detail(WishlistInterface $wishlist): array
-    {
-        return $this->summary($wishlist) + [
-            // The share token is the public part of a public list, so the owner may hand it out.
-            'shareToken' => $wishlist->isPublic() ? $wishlist->getShareToken() : null,
-            'items' => array_map($this->item(...), $wishlist->getItems()->toArray()),
-        ];
+        return $resource;
     }
 
     /**
