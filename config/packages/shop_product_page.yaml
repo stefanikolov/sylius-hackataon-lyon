@@ -1,0 +1,7 @@
+sylius_twig_hooks:
+    hooks:
+        # Show the description without the product code underneath it.
+        'sylius_shop.product.show.content.info.summary':
+            short_description:
+                template: 'shop/product/show/short_description.html.twig'
+                priority: 0

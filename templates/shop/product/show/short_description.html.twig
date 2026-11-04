@@ -1,0 +1,4 @@
+{# Same as the Sylius template, without the product code under the description. #}
+{% set product = hookable_metadata.context.product %}
+
+<div class="mb-3">{{ product.shortDescription }}</div>
