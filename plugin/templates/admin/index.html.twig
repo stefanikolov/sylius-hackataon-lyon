@@ -1,0 +1,8 @@
+{% extends '@SyliusAdmin/shared/layout/base.html.twig' %}
+
+{% block title %}{{ 'hackathon_wishlist.admin.title'|trans }} {{ parent() }}{% endblock %}
+
+{# The admin chrome (sidebar, navbar) comes from the hook; the page content is hooked in by the plugin. #}
+{% block body %}
+    {% hook 'sylius_admin.hackathon_wishlist.index' with { wishlists: wishlists, search: search, page: page, pages: pages, total: total } %}
+{% endblock %}

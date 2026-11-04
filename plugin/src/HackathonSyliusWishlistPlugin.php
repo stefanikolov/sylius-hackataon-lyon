@@ -45,6 +45,17 @@ final class HackathonSyliusWishlistPlugin extends AbstractBundle
             ],
         ]);
 
+        // Admin pages: the same sidebar and navbar as every other admin page, with the plugin's content.
+        $adminPages = [];
+        foreach (['index', 'show'] as $page) {
+            $adminPages['sylius_admin.hackathon_wishlist.' . $page] = [
+                'sidebar' => ['template' => '@SyliusAdmin/shared/crud/common/sidebar.html.twig', 'priority' => 200],
+                'navbar' => ['template' => '@SyliusAdmin/shared/crud/common/navbar.html.twig', 'priority' => 100],
+                'content' => ['template' => '@HackathonSyliusWishlistPlugin/admin/' . $page . '/content.html.twig', 'priority' => 0],
+            ];
+        }
+        $builder->prependExtensionConfig('sylius_twig_hooks', ['hooks' => $adminPages]);
+
         // Wishlist buttons on the product page and product cards, wishlist link in the header.
         $builder->prependExtensionConfig('sylius_twig_hooks', [
             'hooks' => [

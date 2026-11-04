@@ -1,0 +1,7 @@
+{% extends '@SyliusAdmin/shared/layout/base.html.twig' %}
+
+{% block title %}{{ wishlist.name }} - {{ 'hackathon_wishlist.admin.title'|trans }} {{ parent() }}{% endblock %}
+
+{% block body %}
+    {% hook 'sylius_admin.hackathon_wishlist.show' with { wishlist: wishlist, rows: rows, channel: channel } %}
+{% endblock %}

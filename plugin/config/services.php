@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use Hackathon\SyliusWishlistPlugin\Command\DemoDataCommand;
+use Hackathon\SyliusWishlistPlugin\Controller\Admin\WishlistController as AdminWishlistController;
 use Hackathon\SyliusWishlistPlugin\Controller\WishlistController;
+use Hackathon\SyliusWishlistPlugin\EventListener\AdminMenuListener;
 use Hackathon\SyliusWishlistPlugin\EventListener\WishlistCookieListener;
 use Hackathon\SyliusWishlistPlugin\Provider\WishlistProvider;
 use Hackathon\SyliusWishlistPlugin\Repository\WishlistRepository;
@@ -18,6 +21,21 @@ return static function (Symfony\Component\DependencyInjection\Loader\Configurato
     $services->set(WishlistProvider::class);
     $services->set(WishlistCookieListener::class);
     $services->set(WishlistExtension::class);
+    $services->set(AdminMenuListener::class);
+
+    // Example data for the administration demo: php bin/console hackathon:wishlist:demo-data
+    $services->set(DemoDataCommand::class)
+        ->arg('$customerFactory', service('sylius.factory.customer'))
+        ->arg('$customerRepository', service('sylius.repository.customer'))
+        ->arg('$productRepository', service('sylius.repository.product'))
+        ->tag('console.command');
+
+    // Read-only administration (menu entry, listing and details).
+    $services->set(AdminWishlistController::class)
+        ->arg('$channelRepository', service('sylius.repository.channel'))
+        ->arg('$priceCalculator', service('sylius.calculator.product_variant_price'))
+        ->public()
+        ->tag('controller.service_arguments');
 
     $services->set(WishlistController::class)
         ->arg('$cartContext', service('sylius.context.cart'))

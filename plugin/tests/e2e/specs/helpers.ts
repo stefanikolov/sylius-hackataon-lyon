@@ -95,3 +95,18 @@ export async function login(page: Page, email: string, password = 'Passw0rd!x') 
     await page.getByRole('button', { name: /Login/ }).click();
     await expect(page).not.toHaveURL(/login/);
 }
+
+/** Runs a console command of the store (for example the demo data command of the plugin). */
+export function consoleCommand(args: string[]): void {
+    const php = process.env.PHP_BIN ?? 'php';
+    const appDir = process.env.APP_DIR ?? '../../..';
+    execFileSync(php, ['bin/console', ...args], { cwd: appDir, stdio: 'pipe' });
+}
+
+export async function adminLogin(page: Page, username = 'sylius', password = 'sylius') {
+    await go(page, '/admin/login');
+    await page.getByLabel('Username').fill(username);
+    await page.getByLabel('Password').fill(password);
+    await page.getByRole('button', { name: /Login/ }).click();
+    await expect(page).not.toHaveURL(/login/);
+}

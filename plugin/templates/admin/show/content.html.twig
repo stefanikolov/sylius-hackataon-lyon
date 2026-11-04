@@ -1,0 +1,106 @@
+{% from '@SyliusAdmin/shared/helper/breadcrumbs.html.twig' import breadcrumbs %}
+{% from '@SyliusAdmin/shared/helper/product_image.html.twig' import image %}
+{% set context = hookable_metadata.context %}
+{% set wishlist = context.wishlist %}
+{% set customer = wishlist.customer %}
+
+{# Read-only page: it only displays data. There are no forms, edit or delete actions. #}
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="container-xl">
+            {{ breadcrumbs([
+                { name: 'sylius.ui.dashboard', url: path('sylius_admin_dashboard'), active: false },
+                { name: 'hackathon_wishlist.admin.title', url: path('hackathon_admin_wishlist_index'), active: false },
+                { name: wishlist.name, active: true },
+            ]) }}
+            <h1 class="page-title mt-2" {{ sylius_test_html_attribute('wishlist-admin-name') }}>{{ wishlist.name }}</h1>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title">{{ 'hackathon_wishlist.admin.details'|trans }}</h3></div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-5">{{ 'hackathon_wishlist.admin.name'|trans }}</dt>
+                                <dd class="col-7">{{ wishlist.name }}</dd>
+
+                                <dt class="col-5">{{ 'hackathon_wishlist.admin.owner'|trans }}</dt>
+                                <dd class="col-7" {{ sylius_test_html_attribute('wishlist-admin-owner') }}>
+                                    {% if customer %}
+                                        <a href="{{ path('sylius_admin_customer_show', {id: customer.id}) }}">{{ customer.fullName ?: customer.email }}</a>
+                                    {% else %}
+                                        <span class="badge bg-secondary-lt">{{ 'hackathon_wishlist.admin.guest'|trans }}</span>
+                                    {% endif %}
+                                </dd>
+
+                                {% if customer %}
+                                    <dt class="col-5">{{ 'hackathon_wishlist.admin.email'|trans }}</dt>
+                                    <dd class="col-7" {{ sylius_test_html_attribute('wishlist-admin-email') }}>{{ customer.email }}</dd>
+                                {% endif %}
+
+                                <dt class="col-5">{{ 'hackathon_wishlist.admin.products'|trans }}</dt>
+                                <dd class="col-7" {{ sylius_test_html_attribute('wishlist-admin-count') }}>{{ context.rows|length }}</dd>
+
+                                <dt class="col-5">{{ 'hackathon_wishlist.admin.created'|trans }}</dt>
+                                <dd class="col-7">{{ wishlist.createdAt|date('Y-m-d H:i') }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title">{{ 'hackathon_wishlist.admin.saved_products'|trans }}</h3></div>
+                        {% if context.rows is empty %}
+                            <div class="card-body text-center text-muted" {{ sylius_test_html_attribute('wishlist-admin-empty') }}>
+                                {{ 'hackathon_wishlist.admin.empty_wishlist'|trans }}
+                            </div>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table card-table table-vcenter" {{ sylius_test_html_attribute('wishlist-admin-products') }}>
+                                    <thead>
+                                        <tr>
+                                            <th class="w-1"></th>
+                                            <th>{{ 'hackathon_wishlist.admin.product'|trans }}</th>
+                                            <th>{{ 'hackathon_wishlist.admin.price'|trans }}{% if context.channel %} ({{ context.channel.code }}){% endif %}</th>
+                                            <th>{{ 'hackathon_wishlist.admin.saved_at'|trans }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in context.rows %}
+                                            <tr {{ sylius_test_html_attribute('wishlist-admin-product') }}>
+                                                <td style="width: 72px;">{{ image(row.product, {class: 'img-fluid rounded'}) }}</td>
+                                                <td>
+                                                    <a href="{{ path('sylius_admin_product_show', {id: row.product.id}) }}" {{ sylius_test_html_attribute('wishlist-admin-product-name') }}>{{ row.product.name }}</a>
+                                                    {% if not row.product.simple %}
+                                                        <div class="text-muted small">{{ row.variant.name ?: row.variant.code }}</div>
+                                                    {% endif %}
+                                                </td>
+                                                <td {{ sylius_test_html_attribute('wishlist-admin-price') }}>
+                                                    {% if row.price is not null and context.channel %}
+                                                        {{ row.price|sylius_format_money(context.channel.baseCurrency.code, app.request.locale) }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-muted">{{ row.addedAt|date('Y-m-d H:i') }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="{{ path('hackathon_admin_wishlist_index') }}" class="btn btn-outline-secondary">{{ 'hackathon_wishlist.admin.back'|trans }}</a>
+            </div>
+        </div>
+    </div>
+</div>

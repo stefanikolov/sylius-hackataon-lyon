@@ -1,0 +1,84 @@
+{% from '@SyliusAdmin/shared/helper/breadcrumbs.html.twig' import breadcrumbs %}
+{% set context = hookable_metadata.context %}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="container-xl">
+            {{ breadcrumbs([
+                { name: 'sylius.ui.dashboard', url: path('sylius_admin_dashboard'), active: false },
+                { name: 'hackathon_wishlist.admin.title', active: true },
+            ]) }}
+            <h1 class="page-title mt-2" {{ sylius_test_html_attribute('wishlist-admin-title') }}>{{ 'hackathon_wishlist.admin.title'|trans }}</h1>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="card">
+                <div class="card-body border-bottom py-3">
+                    {# Search by customer name or e-mail. It is a plain GET form: it only filters the list. #}
+                    <form method="get" action="{{ path('hackathon_admin_wishlist_index') }}" class="d-flex gap-2" {{ sylius_test_html_attribute('wishlist-admin-search-form') }}>
+                        <input type="search" name="q" value="{{ context.search }}" class="form-control" style="max-width: 360px;"
+                               placeholder="{{ 'hackathon_wishlist.admin.search_placeholder'|trans }}" aria-label="{{ 'hackathon_wishlist.admin.search'|trans }}">
+                        <button type="submit" class="btn btn-primary" {{ sylius_test_html_attribute('wishlist-admin-search') }}>{{ 'hackathon_wishlist.admin.search'|trans }}</button>
+                        {% if context.search %}
+                            <a href="{{ path('hackathon_admin_wishlist_index') }}" class="btn btn-outline-secondary">{{ 'hackathon_wishlist.admin.reset'|trans }}</a>
+                        {% endif %}
+                    </form>
+                </div>
+
+                {% if context.wishlists is empty %}
+                    <div class="card-body text-center text-muted" {{ sylius_test_html_attribute('wishlist-admin-empty') }}>
+                        {{ 'hackathon_wishlist.admin.no_results'|trans }}
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table card-table table-vcenter" {{ sylius_test_html_attribute('wishlist-admin-table') }}>
+                            <thead>
+                                <tr>
+                                    <th>{{ 'hackathon_wishlist.admin.name'|trans }}</th>
+                                    <th>{{ 'hackathon_wishlist.admin.owner'|trans }}</th>
+                                    <th>{{ 'hackathon_wishlist.admin.email'|trans }}</th>
+                                    <th class="text-end">{{ 'hackathon_wishlist.admin.products'|trans }}</th>
+                                    <th class="w-1"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for wishlist in context.wishlists %}
+                                    <tr {{ sylius_test_html_attribute('wishlist-admin-row') }}>
+                                        <td {{ sylius_test_html_attribute('wishlist-admin-name') }}>{{ wishlist.name }}</td>
+                                        <td {{ sylius_test_html_attribute('wishlist-admin-owner') }}>
+                                            {% if wishlist.customerId %}
+                                                <a href="{{ path('sylius_admin_customer_show', {id: wishlist.customerId}) }}">{{ (wishlist.firstName ~ ' ' ~ wishlist.lastName)|trim ?: wishlist.email }}</a>
+                                            {% else %}
+                                                <span class="badge bg-secondary-lt">{{ 'hackathon_wishlist.admin.guest'|trans }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">{{ wishlist.email ?: '-' }}</td>
+                                        <td class="text-end" {{ sylius_test_html_attribute('wishlist-admin-count') }}>{{ wishlist.itemCount }}</td>
+                                        <td>
+                                            <a href="{{ path('hackathon_admin_wishlist_show', {id: wishlist.id}) }}" class="btn btn-sm btn-outline-primary" {{ sylius_test_html_attribute('wishlist-admin-view') }}>{{ 'hackathon_wishlist.admin.view'|trans }}</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card-footer d-flex align-items-center gap-2 flex-wrap">
+                        <div class="text-muted" {{ sylius_test_html_attribute('wishlist-admin-total') }}>{{ 'hackathon_wishlist.admin.total'|trans({'%count%': context.total}) }}</div>
+                        {% if context.pages > 1 %}
+                            <ul class="pagination m-0 ms-auto">
+                                {% for number in 1..context.pages %}
+                                    <li class="page-item {{ number == context.page ? 'active' }}">
+                                        <a class="page-link" href="{{ path('hackathon_admin_wishlist_index', {q: context.search ?: null, page: number}) }}">{{ number }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

@@ -74,6 +74,26 @@ A customer or guest can own many wishlists. Each one has a name and its own prod
 
 Run `php bin/console doctrine:migrations:migrate`. The migration adds the list name and drops the "one list per owner" constraints. Every Stage 1 wishlist becomes a list named `My Favorites` with all its products.
 
+## Stage 3 - read-only administration
+
+Admin menu: **Customers > Wishlists** (`/admin/wishlists`).
+
+| Feature | How |
+|---|---|
+| Listing | One row per wishlist: name, owner, e-mail, number of products, "View". Paginated (20 per page). |
+| Owner | Registered customers by name and e-mail (link to the customer). Anonymous lists show **Guest**. The guest cookie token is never shown. |
+| Search | Customer name, e-mail or wishlist name. The word `guest` finds anonymous lists. |
+| Details | `/admin/wishlists/{id}`: name, owner, e-mail, product count, and for each product the image, name (and variant), current price and the date it was saved. Empty lists show a message. |
+| Prices | Shown for the first enabled channel (its code is in the column header), because the admin has no storefront channel. |
+| Security | Routes are under the admin path, so Sylius' admin firewall applies: anonymous visitors and storefront customers are redirected to the admin login. |
+| Read-only | Only GET routes exist. There are no forms or edit/delete actions, and POST/PUT/PATCH/DELETE answer 405. |
+
+No migration is needed for this stage.
+
+### Demo data
+
+`php bin/console hackathon:wishlist:demo-data` creates John Doe (`john@example.com`) with "My Favorites" (3 products), "Birthday" (5) and "Christmas" (2), Jane Smith with "My Favorites" (2) and an empty "Birthday", and one guest list. Use `--reset` to create them again. It is meant for development and demos.
+
 ## Routes
 
 | Route | Method | Path |

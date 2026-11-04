@@ -25,3 +25,25 @@ hackathon_wishlist:
         delete_hint: The products stay in the store and in your other wishlists. This cannot be undone.
         confirm_delete: Yes, delete
         cancel: Cancel
+    admin:
+        menu: Wishlists
+        title: Wishlists
+        details: Wishlist
+        saved_products: Saved products
+        name: Name
+        owner: Owner
+        email: E-mail
+        guest: Guest
+        products: Products
+        product: Product
+        price: Current price
+        created: Created
+        saved_at: Saved
+        view: View
+        back: Back to wishlists
+        search: Search
+        reset: Reset
+        search_placeholder: Customer name or e-mail
+        no_results: No wishlists found.
+        empty_wishlist: This wishlist is empty.
+        total: '{0} No wishlists|{1} 1 wishlist|]1,Inf[ %count% wishlists'
