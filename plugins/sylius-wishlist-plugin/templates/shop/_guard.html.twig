@@ -1,5 +1,9 @@
 {# Hidden fields every wishlist write form needs: CSRF token, the page to return to and two bot traps. #}
+{# Parameter redirect_to (optional): where to return to. Without it the current URL is used, except when this is rendered #}
+{# by a live component request: that URL is an internal endpoint and not a page, so no redirect is given and the controller falls back. #}
+{% set current_uri = app.request.requestUri %}
+{% set return_to = redirect_to|default('/_components/' in current_uri ? '' : current_uri) %}
 <input type="hidden" name="_token" value="{{ csrf_token('mark_app_wishlist') }}">
-<input type="hidden" name="_redirect" value="{{ app.request.requestUri }}">
+<input type="hidden" name="_redirect" value="{{ return_to }}">
 <input type="hidden" name="_ts" value="{{ 'now'|date('U') }}">
 <input type="text" name="_website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">

@@ -8,24 +8,41 @@
 #}
 {% set sold_out = product.enabledVariants.empty() or (product.simple and not sylius_inventory_is_available(product.enabledVariants.first)) %}
 
+{# This hookable is rendered inside the Sylius product summary live component, so it is rebuilt when a variant is chosen. #}
+{# That is why the return address is the product page itself, and not the URL of the request that rendered this. #}
 <div class="{{ sold_out ? 'mb-4' : '' }}" {{ sylius_test_html_attribute('wishlist-product-page') }}>
-    {% include '@MarkAppSyliusWishlistPlugin/shop/product/_add_form.html.twig' with { product: product, form_id: form_id, with_lists: true, size: '', with_controls: sold_out } only %}
+    {% include '@MarkAppSyliusWishlistPlugin/shop/product/_add_form.html.twig' with {
+        product: product,
+        form_id: form_id,
+        with_lists: true,
+        size: '',
+        with_controls: sold_out,
+        copy_variant: true,
+        redirect_to: path('sylius_shop_product_show', {slug: product.slug, _locale: sylius.localeCode}),
+    } only %}
 </div>
 
 {#
-    The variant is chosen in the Sylius add-to-cart form, which is a live component that is re-rendered while the visitor
-    picks options. So the choice is read at the moment of clicking and copied into this form. Without JavaScript the
-    default variant is remembered.
+    The variant is chosen in the Sylius add-to-cart form, which is re-rendered by the live component while the visitor
+    picks options. So the choice is read at the moment of submitting and copied into the wishlist form. The listener sits on
+    the document: the form element itself is replaced on every re-render and would lose a listener of its own.
+    Without JavaScript the default variant is remembered.
 #}
 <script>
     (function () {
-        var form = document.getElementById('{{ form_id }}');
-
-        if (!form) {
+        if (window.markAppWishlistVariantCopy) {
             return;
         }
 
-        form.addEventListener('submit', function () {
+        window.markAppWishlistVariantCopy = true;
+
+        document.addEventListener('submit', function (event) {
+            var form = event.target;
+
+            if (!form.matches || !form.matches('[data-mark-app-wishlist-copy-variant]')) {
+                return;
+            }
+
             form.querySelectorAll('[data-wishlist-variant]').forEach(function (field) { field.remove(); });
 
             var source = document.querySelector('form[name="sylius_shop_add_to_cart"]');

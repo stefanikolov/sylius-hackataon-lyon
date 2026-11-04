@@ -14,7 +14,7 @@ final class RedirectResolver
     }
 
     /**
-     * Returns the local path posted in "_redirect", or the given route. Only local paths are accepted,
+     * Returns the local path posted in "_redirect", or the given route. Only local paths to real pages are accepted,
      * so the field cannot be used as an open redirect.
      *
      * @param array<string, mixed> $parameters
@@ -23,7 +23,14 @@ final class RedirectResolver
     {
         $target = $request->request->get('_redirect');
 
-        if (\is_string($target) && str_starts_with($target, '/') && !str_starts_with($target, '//') && !str_contains($target, '\\')) {
+        if (
+            \is_string($target)
+            && str_starts_with($target, '/')
+            && !str_starts_with($target, '//')
+            && !str_contains($target, '\\')
+            // Live component endpoints are internal URLs, not pages a visitor can be sent to.
+            && !str_contains($target, '/_components/')
+        ) {
             return $target;
         }
 
