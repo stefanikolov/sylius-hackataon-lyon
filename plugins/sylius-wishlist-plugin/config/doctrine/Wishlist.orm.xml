@@ -9,6 +9,7 @@
     <mapped-superclass name="MarkApp\SyliusWishlistPlugin\Entity\Wishlist" table="mark_app_wishlist">
         <indexes>
             <index name="idx_mark_app_wishlist_updated_at" columns="updated_at" />
+            <index name="idx_mark_app_wishlist_access_token" columns="access_token" />
         </indexes>
 
         <id name="id" column="id" type="integer">
@@ -16,7 +17,7 @@
         </id>
 
         <field name="name" column="name" type="string" length="100" />
-        <field name="accessToken" column="access_token" type="string" length="64" unique="true" nullable="true" />
+        <field name="accessToken" column="access_token" type="string" length="64" nullable="true" />
         <field name="shareToken" column="share_token" type="string" length="64" unique="true" />
         <field name="public" column="is_public" type="boolean" />
         <field name="createdAt" column="created_at" type="datetime_immutable" />

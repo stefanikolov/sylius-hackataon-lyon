@@ -1,0 +1,35 @@
+{# Parameters: wishlists, form (create form), max_lists, routes. All lists of the visitor and a form to create another. #}
+{% form_theme form '@SyliusShop/form/theme.html.twig' %}
+
+<div class="list-group mb-3" {{ sylius_test_html_attribute('wishlist-lists') }}>
+    {% for wishlist in wishlists %}
+        <a href="{{ path(routes.show, {id: wishlist.id}) }}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" {{ sylius_test_html_attribute('wishlist-list') }}>
+            <span class="fw-semibold">{{ wishlist.name }}</span>
+            <span>
+                {% if wishlist.public %}
+                    <span class="badge text-bg-success">{{ 'mark_app_sylius_wishlist.ui.public'|trans }}</span>
+                {% else %}
+                    <span class="badge text-bg-secondary">{{ 'mark_app_sylius_wishlist.ui.private'|trans }}</span>
+                {% endif %}
+                <span class="badge text-bg-light text-muted">{{ 'mark_app_sylius_wishlist.ui.item_count'|trans({'%count%': wishlist.items|length}) }}</span>
+            </span>
+        </a>
+    {% else %}
+        <div class="list-group-item text-muted">{{ 'mark_app_sylius_wishlist.ui.no_lists'|trans }}</div>
+    {% endfor %}
+</div>
+
+<p class="small text-muted">{{ 'mark_app_sylius_wishlist.ui.lists_used'|trans({'%count%': wishlists|length, '%max%': max_lists}) }}</p>
+
+{% if wishlists|length < max_lists %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5">{{ 'mark_app_sylius_wishlist.ui.create_list'|trans }}</h2>
+            {{ form_start(form, {attr: {'data-test-wishlist-create-form': ''}}) }}
+                {{ form_row(form.name) }}
+                {% include '@MarkAppSyliusWishlistPlugin/shop/_traps.html.twig' %}
+                <button type="submit" class="btn btn-primary">{{ 'mark_app_sylius_wishlist.ui.create'|trans }}</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endif %}

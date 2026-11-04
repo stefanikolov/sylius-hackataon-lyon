@@ -60,22 +60,33 @@ final class AddItemController
         }
 
         $guestWishlist = null;
+        $wishlistId = (int) $request->request->get('wishlist');
 
-        if (null !== $customer) {
-            $wishlistId = (int) $request->request->get('wishlist');
-            $wishlist = $wishlistId > 0 ? $this->accessResolver->findOwned($request, $wishlistId) : $this->manager->getDefaultWishlist($customer);
+        if ($wishlistId > 0) {
+            // A chosen list must be the visitor's own, customer or guest.
+            $wishlist = $this->accessResolver->findOwned($request, $wishlistId);
 
             if (null === $wishlist) {
                 throw new NotFoundHttpException();
             }
+        } elseif (null !== $customer) {
+            $wishlist = $this->manager->getDefaultWishlist($customer);
         } else {
+            // Without a chosen list a guest uses their oldest list, or becomes a new guest with a first list.
             $wishlist = $this->accessResolver->findGuestWishlist($request);
 
             if (null === $wishlist) {
-                $this->guard->guardGuestCreate($request);
-                $wishlist = $this->manager->createGuestWishlist();
-            }
+                $existingToken = $this->guestCookie->read($request);
 
+                if (null === $existingToken) {
+                    $this->guard->guardGuestCreate($request);
+                }
+
+                $wishlist = $this->manager->createGuestWishlist($existingToken);
+            }
+        }
+
+        if (null === $customer) {
             $guestWishlist = $wishlist;
         }
 
@@ -83,6 +94,7 @@ final class AddItemController
 
         match ($outcome) {
             AddOutcome::Added => $this->flasher->add($request, 'success', 'mark_app_sylius_wishlist.flash.item_added', ['%list%' => $wishlist->getName()]),
+            AddOutcome::VariantUpdated => $this->flasher->add($request, 'success', 'mark_app_sylius_wishlist.flash.variant_updated', ['%list%' => $wishlist->getName()]),
             AddOutcome::AlreadyInList => $this->flasher->add($request, 'info', 'mark_app_sylius_wishlist.flash.item_exists', ['%list%' => $wishlist->getName()]),
             AddOutcome::ListFull => $this->flasher->add($request, 'error', 'mark_app_sylius_wishlist.flash.list_full', ['%max%' => WishlistManager::MAX_ITEMS]),
         };

@@ -7,7 +7,7 @@ namespace MarkApp\SyliusWishlistPlugin\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Sylius\Component\Core\Model\CustomerInterface;
-use Sylius\Component\Core\Model\ProductVariantInterface;
+use Sylius\Component\Core\Model\ProductInterface;
 
 class Wishlist implements WishlistInterface
 {
@@ -135,10 +135,10 @@ class Wishlist implements WishlistInterface
         }
     }
 
-    public function getItemForVariant(ProductVariantInterface $variant): ?WishlistItemInterface
+    public function getItemForProduct(ProductInterface $product): ?WishlistItemInterface
     {
         foreach ($this->items as $item) {
-            if ($item->getVariant() === $variant) {
+            if ($item->getProduct() === $product) {
                 return $item;
             }
         }

@@ -6,7 +6,7 @@ mark_app_sylius_wishlist:
         my_wishlists: My wishlists
         my_wishlists_subtitle: Keep your favourite products in lists and share them with others.
         add_to_wishlist: Add to wishlist
-        choose_list: Wishlist
+        choose_list: Choose a wishlist
         empty: Your wishlist is empty.
         continue_shopping: Continue shopping
         product: Product
@@ -27,10 +27,10 @@ mark_app_sylius_wishlist:
         copied: Copied!
         share_hint: Anyone with this link can view this list, but cannot change it.
         private_hint: Only you can see this list. Make it public to get a link you can share.
-        guest_hint: Your list is saved in this browser. Log in to keep several named lists in your account.
+        guest_hint: Your lists are saved in this browser. Log in to keep them in your account.
         log_in: Log in
         restore_link: Restore link
-        restore_hint: Keep this link private. Opening it on another device gives access to this list.
+        restore_hint: Keep this link private. Opening it on another device gives access to all your lists.
         shared_by: Shared by %name%
         no_lists: You have no wishlists yet. Add a product to create one, or create a list below.
         lists_used: '%count% of %max% lists used'
@@ -41,3 +41,5 @@ mark_app_sylius_wishlist:
         delete: Delete this list
         delete_confirm: Delete this list and everything on it?
         back_to_lists: Back to my wishlists
+        move: Move
+        move_to: Move to another list

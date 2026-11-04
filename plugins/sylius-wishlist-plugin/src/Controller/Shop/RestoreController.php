@@ -16,8 +16,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
- * Restores access to a guest wishlist on another browser or device with the secret access token.
- * A logged-in customer who opens the link gets the guest list moved into their account instead.
+ * Restores access to all lists of a guest on another browser or device with the secret access token.
+ * A logged-in customer who opens the link gets those lists moved into their account instead.
  */
 final class RestoreController
 {
@@ -34,9 +34,9 @@ final class RestoreController
 
     public function __invoke(Request $request, string $token): RedirectResponse
     {
-        $wishlist = $this->repository->findOneGuestByAccessToken($token);
+        $wishlists = $this->repository->findByGuestToken($token);
 
-        if (null === $wishlist) {
+        if ([] === $wishlists) {
             $this->guard->registerTokenMiss($request);
 
             throw new NotFoundHttpException();
@@ -45,7 +45,7 @@ final class RestoreController
         $customer = $this->accessResolver->getCustomer();
 
         if (null !== $customer) {
-            $this->manager->mergeGuestIntoCustomer($wishlist, $customer);
+            $this->manager->mergeGuestIntoCustomer($wishlists, $customer);
             $this->flasher->add($request, 'success', 'mark_app_sylius_wishlist.flash.list_moved_to_account');
 
             return new RedirectResponse($this->urlGenerator->generate('mark_app_wishlist_shop_account_index'));

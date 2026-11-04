@@ -1,0 +1,13 @@
+{% extends '@SyliusShop/shared/layout/base.html.twig' %}
+
+{% block title %}{{ wishlist.name }} | {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="container mb-auto my-4" {{ sylius_test_html_attribute('wishlist-guest-page') }}>
+        <a href="{{ path(routes.index) }}" class="small text-decoration-none">&larr; {{ 'mark_app_sylius_wishlist.ui.back_to_lists'|trans }}</a>
+        <h1 class="mt-2 mb-3" {{ sylius_test_html_attribute('wishlist-name') }}>{{ wishlist.name }}</h1>
+
+        {% include '@MarkAppSyliusWishlistPlugin/shop/_wishlist_details.html.twig' with { wishlist: wishlist, rename_form: rename_form, routes: routes } only %}
+        {% include '@MarkAppSyliusWishlistPlugin/shop/_items.html.twig' with { wishlist: wishlist, mode: 'owner' } %}
+    </div>
+{% endblock %}

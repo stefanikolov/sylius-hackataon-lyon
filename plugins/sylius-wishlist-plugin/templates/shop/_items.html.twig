@@ -2,6 +2,8 @@
 {% import '@SyliusShop/shared/macro/money.html.twig' as money %}
 
 {% set shared = mode == 'shared' %}
+{# The other lists of the owner: where an entry can be moved to. #}
+{% set move_targets = shared or wishlist is null ? [] : mark_app_wishlist_lists()|filter(other => other.id != wishlist.id) %}
 {% set cart_action = shared ? path('mark_app_wishlist_shop_share_cart', {token: wishlist.shareToken}) : path('mark_app_wishlist_shop_cart') %}
 
 {% if wishlist is null or wishlist.items.empty %}
@@ -66,6 +68,16 @@
                             {% if not shared %}
                                 <button type="submit" form="wl-remove-{{ item.id }}" class="btn btn-sm btn-outline-danger">{{ 'mark_app_sylius_wishlist.ui.remove'|trans }}</button>
                             {% endif %}
+                            {% if move_targets|length > 0 %}
+                                <div class="d-flex justify-content-end gap-1 mt-2" {{ sylius_test_html_attribute('wishlist-move') }}>
+                                    <select name="target" form="wl-move-{{ item.id }}" class="form-select form-select-sm w-auto" aria-label="{{ 'mark_app_sylius_wishlist.ui.move_to'|trans }}">
+                                        {% for other in move_targets %}
+                                            <option value="{{ other.id }}">{{ other.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" form="wl-move-{{ item.id }}" class="btn btn-sm btn-outline-secondary">{{ 'mark_app_sylius_wishlist.ui.move'|trans }}</button>
+                                </div>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
@@ -84,6 +96,11 @@
         </form>
         {% if not shared %}
             <form id="wl-remove-{{ item.id }}" method="post" action="{{ path('mark_app_wishlist_shop_remove', {id: item.id}) }}">
+                {% include '@MarkAppSyliusWishlistPlugin/shop/_guard.html.twig' %}
+            </form>
+        {% endif %}
+        {% if move_targets|length > 0 %}
+            <form id="wl-move-{{ item.id }}" method="post" action="{{ path('mark_app_wishlist_shop_move', {id: item.id}) }}">
                 {% include '@MarkAppSyliusWishlistPlugin/shop/_guard.html.twig' %}
             </form>
         {% endif %}

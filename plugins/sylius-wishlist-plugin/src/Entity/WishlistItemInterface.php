@@ -19,7 +19,8 @@ interface WishlistItemInterface extends ResourceInterface
     public function setProduct(?ProductInterface $product): void;
 
     /**
-     * The variant the customer chose (size, colour, ...). It always belongs to {@see getProduct()}.
+     * The variant the customer chose last (size, colour, ...). It always belongs to {@see getProduct()}.
+     * A product occurs once per list, so choosing another variant replaces this one.
      */
     public function getVariant(): ?ProductVariantInterface;
 

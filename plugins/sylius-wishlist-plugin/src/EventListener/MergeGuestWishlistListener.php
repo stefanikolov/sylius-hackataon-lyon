@@ -11,7 +11,7 @@ use Sylius\Component\Core\Model\ShopUserInterface;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 
 /**
- * When a guest with a wishlist logs in (or registers), the guest list moves into the customer's account.
+ * When a guest with wishlists logs in (or registers), the guest lists move into the customer's account.
  */
 final class MergeGuestWishlistListener
 {
@@ -37,10 +37,10 @@ final class MergeGuestWishlistListener
             return;
         }
 
-        $guestWishlist = $this->repository->findOneGuestByAccessToken($accessToken);
+        $guestWishlists = $this->repository->findByGuestToken($accessToken);
 
-        if (null !== $guestWishlist) {
-            $this->manager->mergeGuestIntoCustomer($guestWishlist, $customer);
+        if ([] !== $guestWishlists) {
+            $this->manager->mergeGuestIntoCustomer($guestWishlists, $customer);
         }
 
         // The cookie is useless from now on, whether or not a list was found.

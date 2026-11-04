@@ -8,7 +8,7 @@
 >
     <mapped-superclass name="MarkApp\SyliusWishlistPlugin\Entity\WishlistItem" table="mark_app_wishlist_item">
         <unique-constraints>
-            <unique-constraint name="uniq_mark_app_wishlist_item_variant" columns="wishlist_id,variant_id" />
+            <unique-constraint name="uniq_mark_app_wishlist_item_product" columns="wishlist_id,product_id" />
         </unique-constraints>
 
         <id name="id" column="id" type="integer">

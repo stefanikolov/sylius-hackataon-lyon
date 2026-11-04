@@ -1,10 +1,10 @@
-{# Parameters: product, form_id, with_lists (bool), size ('sm' or ''), with_controls (bool), copy_variant (bool, optional), redirect_to (optional). #}
+{# Parameters: product, form_id, with_lists (bool), size ('sm' or ''), with_controls (bool), dropdown (bool, optional), copy_variant (bool, optional), redirect_to (optional). #}
 {# The form always carries the hidden fields; the visible controls are inside it only when with_controls is true. #}
 <form id="{{ form_id }}" method="post" action="{{ path('mark_app_wishlist_shop_add', {code: product.code}) }}"
       {{ copy_variant|default(false) ? 'data-mark-app-wishlist-copy-variant' : '' }} {{ sylius_test_html_attribute('add-to-wishlist-form') }}>
     {% include '@MarkAppSyliusWishlistPlugin/shop/_guard.html.twig' with { redirect_to: redirect_to|default(null) } %}
 
     {% if with_controls %}
-        {% include '@MarkAppSyliusWishlistPlugin/shop/product/_controls.html.twig' with { product: product, form_id: form_id, with_lists: with_lists, size: size } only %}
+        {% include '@MarkAppSyliusWishlistPlugin/shop/product/_controls.html.twig' with { product: product, form_id: form_id, with_lists: with_lists, size: size, dropdown: dropdown|default(false) } only %}
     {% endif %}
 </form>

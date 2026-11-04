@@ -6,7 +6,7 @@ mark_app_sylius_wishlist:
         my_wishlists: Mijn wensenlijsten
         my_wishlists_subtitle: Bewaar je favoriete producten in lijsten en deel ze met anderen.
         add_to_wishlist: Op wensenlijst
-        choose_list: Wensenlijst
+        choose_list: Kies een wensenlijst
         empty: Je wensenlijst is leeg.
         continue_shopping: Verder winkelen
         product: Product
@@ -27,10 +27,10 @@ mark_app_sylius_wishlist:
         copied: Gekopieerd!
         share_hint: Iedereen met deze link kan de lijst bekijken, maar niet wijzigen.
         private_hint: Alleen jij ziet deze lijst. Maak hem openbaar om een link te krijgen die je kunt delen.
-        guest_hint: Je lijst wordt in deze browser bewaard. Log in om meerdere lijsten met een naam in je account te houden.
+        guest_hint: Je lijsten worden in deze browser bewaard. Log in om ze in je account te houden.
         log_in: Inloggen
         restore_link: Herstellink
-        restore_hint: Houd deze link privé. Als je hem op een ander apparaat opent, krijg je toegang tot deze lijst.
+        restore_hint: Houd deze link privé. Als je hem op een ander apparaat opent, krijg je toegang tot al je lijsten.
         shared_by: Gedeeld door %name%
         no_lists: Je hebt nog geen wensenlijsten. Voeg een product toe om er een te maken, of maak hieronder een lijst.
         lists_used: '%count% van %max% lijsten gebruikt'
@@ -41,3 +41,5 @@ mark_app_sylius_wishlist:
         delete: Deze lijst verwijderen
         delete_confirm: Deze lijst en alles erop verwijderen?
         back_to_lists: Terug naar mijn wensenlijsten
+        move: Verplaatsen
+        move_to: Verplaats naar een andere lijst

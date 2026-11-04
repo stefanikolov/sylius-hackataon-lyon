@@ -9,17 +9,21 @@ use MarkApp\SyliusWishlistPlugin\Exception\WishlistLimitReachedException;
 use MarkApp\SyliusWishlistPlugin\Exception\WishlistNameTakenException;
 use MarkApp\SyliusWishlistPlugin\Form\Type\WishlistType;
 use MarkApp\SyliusWishlistPlugin\Service\Flasher;
+use MarkApp\SyliusWishlistPlugin\Service\GuestCookie;
 use MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver;
 use MarkApp\SyliusWishlistPlugin\Service\WishlistManager;
+use MarkApp\SyliusWishlistPlugin\Service\WishlistRoutes;
 use MarkApp\SyliusWishlistPlugin\Service\WriteGuard;
 use Sylius\Resource\Factory\FactoryInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Webmozart\Assert\Assert;
 
+/**
+ * Creates a named list, for a customer or for a guest. A guest without a cookie becomes a new guest with this list.
+ */
 final class CreateController
 {
     public function __construct(
@@ -30,19 +34,18 @@ final class CreateController
         private readonly WriteGuard $guard,
         private readonly Flasher $flasher,
         private readonly FactoryInterface $wishlistFactory,
+        private readonly WishlistRoutes $routes,
+        private readonly GuestCookie $guestCookie,
     ) {
     }
 
     public function __invoke(Request $request): RedirectResponse
     {
         $customer = $this->accessResolver->getCustomer();
-
-        if (null === $customer) {
-            throw new AccessDeniedHttpException();
-        }
+        $routes = $this->routes->names();
 
         // The Symfony form validates its own CSRF token.
-        $this->guard->guardWrite($request, false, false);
+        $this->guard->guardWrite($request, null === $customer, false);
 
         $draft = $this->wishlistFactory->createNew();
         Assert::isInstanceOf($draft, WishlistInterface::class);
@@ -50,18 +53,32 @@ final class CreateController
         $form = $this->formFactory->create(WishlistType::class, $draft);
         $form->handleRequest($request);
 
-        $indexUrl = $this->urlGenerator->generate('mark_app_wishlist_shop_account_index');
+        $indexUrl = $this->urlGenerator->generate($routes['index']);
 
         if (!$form->isSubmitted() || !$form->isValid()) {
-            $this->flasher->add($request, 'error', 'mark_app_sylius_wishlist.flash.invalid_name');
+            // "draft" holds the trimmed name; an empty one is the usual mistake and gets its own message.
+            $this->flasher->add($request, 'error', '' === $draft->getName() ? 'mark_app_sylius_wishlist.flash.name_required' : 'mark_app_sylius_wishlist.flash.name_too_long');
 
             return new RedirectResponse($indexUrl);
         }
 
+        $accessToken = null;
+
         try {
-            $wishlist = $this->manager->createCustomerWishlist($customer, $draft->getName());
+            if (null !== $customer) {
+                $wishlist = $this->manager->createCustomerWishlist($customer, $draft->getName());
+            } else {
+                $accessToken = $this->guestCookie->read($request);
+
+                if (null === $accessToken) {
+                    $this->guard->guardGuestCreate($request);
+                }
+
+                $wishlist = $this->manager->createGuestWishlist($accessToken, $draft->getName());
+                $accessToken = $wishlist->getAccessToken();
+            }
         } catch (WishlistLimitReachedException) {
-            $this->flasher->add($request, 'error', 'mark_app_sylius_wishlist.flash.list_limit', ['%max%' => WishlistManager::MAX_LISTS]);
+            $this->flasher->add($request, 'error', 'mark_app_sylius_wishlist.flash.list_limit', ['%max%' => null !== $customer ? WishlistManager::MAX_LISTS : WishlistManager::MAX_GUEST_LISTS]);
 
             return new RedirectResponse($indexUrl);
         } catch (WishlistNameTakenException) {
@@ -72,6 +89,12 @@ final class CreateController
 
         $this->flasher->add($request, 'success', 'mark_app_sylius_wishlist.flash.list_created');
 
-        return new RedirectResponse($this->urlGenerator->generate('mark_app_wishlist_shop_account_show', ['id' => $wishlist->getId()]));
+        $response = new RedirectResponse($this->urlGenerator->generate($routes['show'], ['id' => $wishlist->getId()]));
+
+        if (null !== $accessToken) {
+            $response->headers->setCookie($this->guestCookie->create($accessToken, $request));
+        }
+
+        return $response;
     }
 }

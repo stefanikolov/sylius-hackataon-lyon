@@ -6,12 +6,12 @@ namespace MarkApp\SyliusWishlistPlugin\Entity;
 
 use Doctrine\Common\Collections\Collection;
 use Sylius\Component\Core\Model\CustomerInterface;
-use Sylius\Component\Core\Model\ProductVariantInterface;
+use Sylius\Component\Core\Model\ProductInterface;
 use Sylius\Resource\Model\ResourceInterface;
 
 interface WishlistInterface extends ResourceInterface
 {
-    public const DEFAULT_NAME = 'My wishlist';
+    public const DEFAULT_NAME = 'My Favorites';
 
     public function getName(): string;
 
@@ -27,7 +27,8 @@ interface WishlistInterface extends ResourceInterface
     public function isGuest(): bool;
 
     /**
-     * Secret token that grants write access to a guest wishlist (stored in a cookie, usable as a restore link).
+     * Secret token of the guest who owns this list (stored in a cookie, usable as a restore link). A guest can own
+     * several lists, which then all carry the same token. Customers' lists have none.
      */
     public function getAccessToken(): ?string;
 
@@ -59,5 +60,8 @@ interface WishlistInterface extends ResourceInterface
 
     public function removeItem(WishlistItemInterface $item): void;
 
-    public function getItemForVariant(ProductVariantInterface $variant): ?WishlistItemInterface;
+    /**
+     * A product occurs at most once per list, whatever its variant.
+     */
+    public function getItemForProduct(ProductInterface $product): ?WishlistItemInterface;
 }

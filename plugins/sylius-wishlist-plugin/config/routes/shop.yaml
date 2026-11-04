@@ -2,7 +2,7 @@
 mark_app_wishlist_shop_index:
     path: /wishlist
     methods: [GET]
-    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\IndexController
+    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\OverviewController
 
 mark_app_wishlist_shop_add:
     path: /wishlist/add/{code}
@@ -15,6 +15,13 @@ mark_app_wishlist_shop_remove:
     path: /wishlist/remove/{id}
     methods: [POST]
     controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\RemoveItemController
+    requirements:
+        id: '\d+'
+
+mark_app_wishlist_shop_move:
+    path: /wishlist/move/{id}
+    methods: [POST]
+    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\MoveItemController
     requirements:
         id: '\d+'
 
@@ -49,11 +56,38 @@ mark_app_wishlist_shop_share_cart:
     requirements:
         token: '[a-f0-9]{48}'
 
+# Guests manage their lists on shop pages: the same controllers as the customer area below.
+mark_app_wishlist_shop_guest_create:
+    path: /wishlist/lists/create
+    methods: [POST]
+    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\CreateController
+
+mark_app_wishlist_shop_guest_show:
+    path: /wishlist/lists/{id}
+    methods: [GET]
+    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\ShowController
+    requirements:
+        id: '\d+'
+
+mark_app_wishlist_shop_guest_rename:
+    path: /wishlist/lists/{id}/rename
+    methods: [POST]
+    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\RenameController
+    requirements:
+        id: '\d+'
+
+mark_app_wishlist_shop_guest_delete:
+    path: /wishlist/lists/{id}/delete
+    methods: [POST]
+    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\DeleteController
+    requirements:
+        id: '\d+'
+
 # Customer area: the /account path is protected by the shop firewall (ROLE_USER).
 mark_app_wishlist_shop_account_index:
     path: /account/wishlists
     methods: [GET]
-    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\AccountIndexController
+    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\OverviewController
 
 mark_app_wishlist_shop_account_create:
     path: /account/wishlists/create
@@ -63,7 +97,7 @@ mark_app_wishlist_shop_account_create:
 mark_app_wishlist_shop_account_show:
     path: /account/wishlists/{id}
     methods: [GET]
-    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\AccountShowController
+    controller: MarkApp\SyliusWishlistPlugin\Controller\Shop\ShowController
     requirements:
         id: '\d+'
 

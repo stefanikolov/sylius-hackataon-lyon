@@ -1,0 +1,22 @@
+{# Parameters: wishlist, rename_form, routes. Visibility and share link, rename, and delete with a confirmation. #}
+{% form_theme rename_form '@SyliusShop/form/theme.html.twig' %}
+
+{% include '@MarkAppSyliusWishlistPlugin/shop/_share_panel.html.twig' with { wishlist: wishlist, panel_id: 'wl-share-url' } %}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h2 class="h6">{{ 'mark_app_sylius_wishlist.ui.rename'|trans }}</h2>
+        {{ form_start(rename_form, {attr: {'data-test-wishlist-rename-form': ''}}) }}
+            {{ form_row(rename_form.name) }}
+            {% include '@MarkAppSyliusWishlistPlugin/shop/_traps.html.twig' %}
+            <button type="submit" class="btn btn-sm btn-outline-primary">{{ 'mark_app_sylius_wishlist.ui.rename'|trans }}</button>
+        {{ form_end(rename_form) }}
+
+        <hr>
+        <form method="post" action="{{ path(routes.delete, {id: wishlist.id}) }}"
+              onsubmit="return confirm('{{ 'mark_app_sylius_wishlist.ui.delete_confirm'|trans|e('js') }}');">
+            {% include '@MarkAppSyliusWishlistPlugin/shop/_guard.html.twig' %}
+            <button type="submit" class="btn btn-sm btn-outline-danger" {{ sylius_test_html_attribute('wishlist-delete') }}>{{ 'mark_app_sylius_wishlist.ui.delete'|trans }}</button>
+        </form>
+    </div>
+</div>

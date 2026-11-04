@@ -10,7 +10,6 @@ mark_app_sylius_wishlist:
         list_created: Wishlist created.
         list_renamed: Wishlist renamed.
         list_deleted: Wishlist deleted.
-        invalid_name: Enter a name of at most 100 characters.
         name_taken: You already have a list with this name.
         list_limit: You can have at most %max% lists.
         now_public: This list is now public. Anyone with the link can view it.
@@ -18,3 +17,9 @@ mark_app_sylius_wishlist:
         list_moved_to_account: Your guest list is now part of your account.
         list_restored: Your wishlist was restored on this device.
         variant_unavailable: This combination is not available.
+        name_required: Please enter a name for your wishlist.
+        name_too_long: A wishlist name can have at most 100 characters.
+        variant_updated: Variant updated on "%list%".
+        item_moved: Moved to "%list%".
+        item_move_exists: '"%list%" already has this product, so it was only removed from "%from%".'
+        move_same_list: The product is already on that list.

@@ -10,7 +10,6 @@ mark_app_sylius_wishlist:
         list_created: Wensenlijst gemaakt.
         list_renamed: Wensenlijst hernoemd.
         list_deleted: Wensenlijst verwijderd.
-        invalid_name: Vul een naam in van maximaal 100 tekens.
         name_taken: Je hebt al een lijst met deze naam.
         list_limit: Je kunt maximaal %max% lijsten hebben.
         now_public: Deze lijst is nu openbaar. Iedereen met de link kan hem bekijken.
@@ -18,3 +17,9 @@ mark_app_sylius_wishlist:
         list_moved_to_account: Je gastlijst is nu onderdeel van je account.
         list_restored: Je wensenlijst is op dit apparaat hersteld.
         variant_unavailable: Deze combinatie is niet beschikbaar.
+        name_required: Vul een naam in voor je wensenlijst.
+        name_too_long: Een naam mag maximaal 100 tekens hebben.
+        variant_updated: Variant aangepast op "%list%".
+        item_moved: Verplaatst naar "%list%".
+        item_move_exists: '"%list%" heeft dit product al, dus het is alleen verwijderd van "%from%".'
+        move_same_list: Het product staat al op die lijst.

@@ -11,8 +11,9 @@ use Sylius\Component\Customer\Context\CustomerContextInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Decides which wishlists the current visitor may manage: a logged-in customer owns their lists,
- * a guest owns the single list that matches the access token in their cookie.
+ * Decides which wishlists the current visitor may manage: a logged-in customer owns their lists, a guest owns the
+ * lists that carry the access token from their cookie. Every lookup by id also checks the owner, so one visitor can
+ * never reach the list of another.
  */
 final class WishlistAccessResolver
 {
@@ -30,28 +31,56 @@ final class WishlistAccessResolver
         return $customer instanceof CustomerInterface ? $customer : null;
     }
 
-    public function findGuestWishlist(Request $request): ?WishlistInterface
+    /**
+     * @return list<WishlistInterface> the lists of the guest, oldest first
+     */
+    public function findGuestWishlists(Request $request): array
     {
         $accessToken = $this->guestCookie->read($request);
 
-        return null === $accessToken ? null : $this->repository->findOneGuestByAccessToken($accessToken);
+        return null === $accessToken ? [] : $this->repository->findByGuestToken($accessToken);
     }
 
     /**
-     * For a customer: the list with the given id, or their default list when no id is given.
-     * For a guest: their own list (the id is ignored, a guest has one list).
+     * The oldest list of the guest: the one used when a product is added without choosing a list.
+     */
+    public function findGuestWishlist(Request $request): ?WishlistInterface
+    {
+        return $this->findGuestWishlists($request)[0] ?? null;
+    }
+
+    /**
+     * @return list<WishlistInterface> the lists of the current visitor, whether customer or guest, oldest first
+     */
+    public function getOwnedWishlists(Request $request): array
+    {
+        $customer = $this->getCustomer();
+
+        return null === $customer ? $this->findGuestWishlists($request) : $this->repository->findByCustomer($customer);
+    }
+
+    /**
+     * The list with the given id, or the oldest list when no id is given. Only lists of the current visitor are found.
      */
     public function findOwned(Request $request, ?int $id = null): ?WishlistInterface
     {
         $customer = $this->getCustomer();
 
-        if (null === $customer) {
-            return $this->findGuestWishlist($request);
+        if (null !== $customer) {
+            return null === $id
+                ? ($this->repository->findByCustomer($customer)[0] ?? null)
+                : $this->repository->findOneByIdAndCustomer($id, $customer);
+        }
+
+        $accessToken = $this->guestCookie->read($request);
+
+        if (null === $accessToken) {
+            return null;
         }
 
         return null === $id
-            ? ($this->repository->findByCustomer($customer)[0] ?? null)
-            : $this->repository->findOneByIdAndCustomer($id, $customer);
+            ? ($this->repository->findByGuestToken($accessToken)[0] ?? null)
+            : $this->repository->findOneByIdAndGuestToken($id, $accessToken);
     }
 
     public function isOwner(Request $request, WishlistInterface $wishlist): bool

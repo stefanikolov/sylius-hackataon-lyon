@@ -10,5 +10,5 @@
 #}
 <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
     {{ buttons.submit('sylius.ui.add_to_cart'|trans, 'add-to-cart-button', null, 'btn-primary', not enabled) }}
-    {% include '@MarkAppSyliusWishlistPlugin/shop/product/_controls.html.twig' with { product: product, form_id: 'wl-add-main-' ~ product.id, with_lists: true, size: '' } only %}
+    {% include '@MarkAppSyliusWishlistPlugin/shop/product/_controls.html.twig' with { product: product, form_id: 'wl-add-main-' ~ product.id, with_lists: true, size: '', dropdown: true } only %}
 </div>

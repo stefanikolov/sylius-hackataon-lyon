@@ -17,7 +17,7 @@ use Twig\TwigFunction;
 final class WishlistExtension extends AbstractExtension
 {
     /** @var list<WishlistInterface>|null */
-    private ?array $customerWishlists = null;
+    private ?array $wishlists = null;
 
     private ?int $itemCount = null;
 
@@ -33,23 +33,23 @@ final class WishlistExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('mark_app_wishlist_customer_lists', $this->getCustomerWishlists(...)),
+            new TwigFunction('mark_app_wishlist_lists', $this->getWishlists(...)),
             new TwigFunction('mark_app_wishlist_is_purchasable', $this->isPurchasable(...)),
             new TwigFunction('mark_app_wishlist_item_count', $this->getItemCount(...)),
         ];
     }
 
     /**
-     * @return list<WishlistInterface> the lists of the logged-in customer, an empty list for guests
+     * @return list<WishlistInterface> the lists of the visitor, whether customer or guest, oldest first
      */
-    public function getCustomerWishlists(): array
+    public function getWishlists(): array
     {
-        if (null === $this->customerWishlists) {
-            $customer = $this->accessResolver->getCustomer();
-            $this->customerWishlists = null === $customer ? [] : $this->repository->findByCustomer($customer);
+        if (null === $this->wishlists) {
+            $request = $this->requestStack->getCurrentRequest();
+            $this->wishlists = null === $request ? [] : $this->accessResolver->getOwnedWishlists($request);
         }
 
-        return $this->customerWishlists;
+        return $this->wishlists;
     }
 
     public function isPurchasable(WishlistItemInterface $item): bool

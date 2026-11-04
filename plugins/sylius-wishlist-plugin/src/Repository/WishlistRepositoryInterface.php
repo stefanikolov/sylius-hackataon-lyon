@@ -14,9 +14,17 @@ use Sylius\Resource\Doctrine\Persistence\RepositoryInterface;
 interface WishlistRepositoryInterface extends RepositoryInterface
 {
     /**
-     * Finds a guest wishlist (no customer) by its secret access token.
+     * All lists of the guest that owns the given secret token.
+     *
+     * @return list<WishlistInterface> ordered from oldest to newest
      */
-    public function findOneGuestByAccessToken(string $accessToken): ?WishlistInterface;
+    public function findByGuestToken(string $accessToken): array;
+
+    public function findOneByIdAndGuestToken(int $id, string $accessToken): ?WishlistInterface;
+
+    public function countByGuestToken(string $accessToken): int;
+
+    public function hasNameForGuestToken(string $accessToken, string $name, ?int $excludedId = null): bool;
 
     /**
      * Finds a wishlist by its share token, but only when it is public.
@@ -38,14 +46,15 @@ interface WishlistRepositoryInterface extends RepositoryInterface
     public function countItemsForCustomer(CustomerInterface $customer): int;
 
     /**
-     * The number of products on the guest wishlist that belongs to the given access token.
+     * The number of products on all lists of the guest that owns the given access token.
      */
     public function countItemsForGuest(string $accessToken): int;
 
     public function hasNameForCustomer(CustomerInterface $customer, string $name, ?int $excludedId = null): bool;
 
     /**
-     * Guest wishlists that are empty and older than $emptyBefore, or untouched since $inactiveBefore.
+     * All lists of guests that are abandoned: guests whose lists are all empty and older than $emptyBefore, and guests
+     * who have not touched any list since $inactiveBefore. A guest is removed as a whole, never list by list.
      *
      * @return list<WishlistInterface>
      */
