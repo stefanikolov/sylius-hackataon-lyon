@@ -1,0 +1,5 @@
+mark_app_sylius_wishlist_admin:
+    resource: "@MarkAppSyliusWishlistPlugin/config/routes/admin.yaml"
+
+mark_app_sylius_wishlist_shop:
+    resource: "@MarkAppSyliusWishlistPlugin/config/routes/shop.yaml"

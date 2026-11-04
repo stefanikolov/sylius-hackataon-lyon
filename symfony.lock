@@ -126,6 +126,9 @@
             "ref": "d1227d002b70d1a1f941d91845fcd7ac7fbfc929"
         }
     },
+    "mark-app/sylius-wishlist-plugin": {
+        "version": "dev-main"
+    },
     "nelmio/alice": {
         "version": "3.13",
         "recipe": {
