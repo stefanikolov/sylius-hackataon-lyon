@@ -5,18 +5,23 @@ customers can keep several named lists, and every list can be shared with a link
 
 ## Features
 
-- **Add from the product page and from product listings.** The product page remembers the variant that is selected in the
-  Sylius add-to-cart form (size, colour, ...); a listing remembers the default variant.
-- **Guests and customers.** A guest gets one list, kept in a cookie. When the guest logs in or registers, that list moves
-  into the account (or its products are merged into the default list, without duplicates).
-- **Several named lists for customers** (at most 20): create, rename, delete. Names are unique per customer.
-- **Private or public per list.** A public list has a share link with a random token, anyone with the link can view it
+- **Several named lists, for customers and for guests.** Create, rename and delete lists (customers: up to 20, guests: up
+  to 10). Names are unique per owner, case-insensitive, and cannot be empty or only spaces. Deleting asks for a
+  confirmation and never touches the catalogue or the owner's other lists.
+- **Choose the list when you add.** On the product page next to the button, on product listings from a dropdown where one
+  click picks the list. Without a choice the oldest list is used; the first product creates the list "My Favorites".
+- **A product occurs once per list**, with the variant that was chosen last (size, colour, ...). The same product may be
+  on several lists. The product page reads the variant from the Sylius add-to-cart form; a listing uses the default variant.
+- **Move a product to another list** in one step. If the target already has the product, it is only removed from the source.
+- **Guests keep their lists in a cookie.** When a guest logs in or registers, the lists move into the account: a list
+  whose name the customer already has is merged into it (without duplicates), the others become new lists.
+- **Private or public per list.** A public list has a share link with a random token; anyone with the link can view it
   (read-only) and put its products in their own cart. A private list, or an unknown token, answers `404`.
 - **Copy link** button on the list page, and a counter in the header.
-- **Cart integration.** Add one product, or the selected products, to the regular Sylius cart. Products stay on the list.
-  Unavailable products (disabled, not in the channel, out of stock) stay visible but cannot be added.
-- **Guest restore link.** A guest sees a secret link that restores the list on another device. It is a different token
-  than the public share link: sharing a list never gives write access.
+- **Cart integration.** Add one product, or the selected products, of any list to the regular Sylius cart. Products stay
+  on the list. Unavailable products (disabled, not in the channel, out of stock) stay visible but cannot be added.
+- **Guest restore link.** A guest sees a secret link that restores all their lists on another device. It is a different
+  token than the public share link: sharing a list never gives write access.
 - **Bot protection:** CSRF token, rate limiting, honeypot and time trap for guests, `noindex` on all wishlist pages,
   a cleanup command for abandoned guest lists.
 
@@ -73,26 +78,35 @@ bin/console doctrine:migrations:migrate
 bin/console cache:clear
 ```
 
-| Migration | Adds |
-|---|---|
-| `Version20261104145200` | the wishlist and wishlist item tables |
-| `Version20261104150833` | the chosen variant on every item (existing items get the product's first variant) |
+| Version | Migration | Adds |
+|---|---|---|
+| 1.0.0 (Stage 1) | `Version20261104145200` | the wishlist and wishlist item tables |
+| 1.0.0 (Stage 1) | `Version20261104150833` | the chosen variant on every item (existing items get the product's first variant) |
+| 2.0.0 (Stage 2) | `Version20261104170000` | several lists per guest; one entry per product per list (a list that held several variants of one product keeps the newest entry) |
 
 Migrations run in their own namespace, `MarkApp\SyliusWishlistPlugin\Migrations`, and are also reversible.
+
+Upgrading from 1.0.0 keeps all lists and products. The pages of customers stay in the account area; guests get their own
+pages under `/wishlist`.
 
 ## Routes
 
 | Route | Path (after `/{_locale}`) | Who |
 |---|---|---|
-| `mark_app_wishlist_shop_index` | `GET /wishlist` | guest list; customers are sent to their account |
+| `mark_app_wishlist_shop_index` | `GET /wishlist` | guest: all lists; customers are sent to their account |
+| `mark_app_wishlist_shop_guest_{show,create,rename,delete}` | `/wishlist/lists...` | guests |
+| `mark_app_wishlist_shop_account_{index,show,create,rename,delete}` | `/account/wishlists...` | logged-in customers |
 | `mark_app_wishlist_shop_add` | `POST /wishlist/add/{code}` | everyone |
 | `mark_app_wishlist_shop_remove` | `POST /wishlist/remove/{id}` | owner |
+| `mark_app_wishlist_shop_move` | `POST /wishlist/move/{id}` | owner |
 | `mark_app_wishlist_shop_cart` | `POST /wishlist/cart` | owner |
 | `mark_app_wishlist_shop_visibility` | `POST /wishlist/visibility` | owner |
 | `mark_app_wishlist_shop_restore` | `GET /wishlist/restore/{token}` | holder of the secret token |
 | `mark_app_wishlist_shop_share` | `GET /wishlist/share/{token}` | anyone, public lists only |
 | `mark_app_wishlist_shop_share_cart` | `POST /wishlist/share/{token}/cart` | anyone |
-| `mark_app_wishlist_shop_account_*` | `/account/wishlists...` | logged-in customers |
+
+Customers and guests use the same controllers; only the pages differ (account layout with menu for customers, shop
+layout for guests). A list of another visitor always answers `404`, never `403`.
 
 ## Configuration and limits
 
@@ -100,7 +114,8 @@ Migrations run in their own namespace, `MarkApp\SyliusWishlistPlugin\Migrations`
 |---|---|---|
 | Products per list | 100 | `WishlistManager::MAX_ITEMS` |
 | Lists per customer | 20 | `WishlistManager::MAX_LISTS` |
-| New guest lists per IP | 10 per hour | rate limiter `mark_app_wishlist_guest_create` |
+| Lists per guest | 10 | `WishlistManager::MAX_GUEST_LISTS` |
+| New guests (first list) per IP | 10 per hour | rate limiter `mark_app_wishlist_guest_create` |
 | Write requests per IP | 60 per minute | rate limiter `mark_app_wishlist_write` |
 | Unknown share/restore tokens per IP | 20 per minute | rate limiter `mark_app_wishlist_token_miss` |
 
@@ -120,7 +135,8 @@ visitor shares the proxy's IP and the limits hit everyone at once.
 
 ### Housekeeping
 
-Remove empty guest lists (older than 24 hours) and guest lists untouched for 90 days, for example from a daily cron job:
+Remove abandoned guests with all their lists: guests whose lists are all empty and older than 24 hours, and guests who have not
+touched any list for 90 days. A guest is removed as a whole, never list by list. For example from a daily cron job:
 
 ```bash
 bin/console mark-app:wishlist:cleanup-guests
