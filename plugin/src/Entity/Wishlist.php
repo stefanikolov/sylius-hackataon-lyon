@@ -12,23 +12,35 @@ use Sylius\Component\Core\Model\CustomerInterface;
 use Sylius\Component\Core\Model\ProductVariantInterface;
 
 /**
- * A wishlist belongs either to a logged-in customer or to an anonymous visitor (identified by a cookie token).
+ * A named wishlist. A logged-in customer, or an anonymous visitor identified by a cookie token,
+ * can own many of them. Each list has its own, independent collection of items.
  */
 #[ORM\Entity(repositoryClass: WishlistRepository::class)]
 #[ORM\Table(name: 'hackathon_wishlist')]
+#[ORM\Index(name: 'IDX_F26AA04D5F37A13B', columns: ['token'])]
 class Wishlist
 {
+    /** Name of the list that is created automatically the first time a product is saved. */
+    public const DEFAULT_NAME = 'My Favorites';
+    public const MAX_NAME_LENGTH = 100;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    /** Anonymous identifier stored in the visitor's cookie. Empty once the wishlist belongs to a customer. */
-    #[ORM\Column(length: 64, unique: true, nullable: true)]
+    #[ORM\Column(length: 255)]
+    private string $name = self::DEFAULT_NAME;
+
+    /**
+     * Anonymous owner identifier stored in the visitor's cookie. It is shared by all lists of that visitor
+     * and is empty once the list belongs to a customer.
+     */
+    #[ORM\Column(length: 64, nullable: true)]
     private ?string $token = null;
 
-    #[ORM\OneToOne(targetEntity: CustomerInterface::class)]
-    #[ORM\JoinColumn(nullable: true, unique: true, onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: CustomerInterface::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?CustomerInterface $customer = null;
 
     /** @var Collection<int, WishlistItem> */
@@ -48,6 +60,16 @@ class Wishlist
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
     }
 
     public function getToken(): ?string

@@ -122,6 +122,7 @@ test('10. Add only the selected wishlist products to the cart', async ({ page })
     await rows(page).nth(0).locator('input[type=checkbox]').check();
     await rows(page).nth(1).locator('input[type=checkbox]').check();
     await page.getByRole('button', { name: 'Add Selected to Cart' }).click();
+    await page.waitForURL(/cart/); // let the redirect to the cart finish before navigating away
     expect(await cartCount(page)).toBe(2);
     await go(page, '/en_US/wishlist');
     await expect(rows(page)).toHaveCount(3);

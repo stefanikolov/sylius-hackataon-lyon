@@ -5,6 +5,15 @@
 {% if variant %}
     <form action="{{ path('hackathon_wishlist_add', {variantId: variant.id}) }}" method="post" class="my-2" {{ sylius_test_html_attribute('wishlist-form') }}>
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('hackathon_wishlist') }}">
+        {# Destination list. With several lists the visitor picks one; the default list is used otherwise. #}
+        {% set lists = hackathon_wishlists() %}
+        {% if lists|length > 1 %}
+            <select name="wishlist" class="form-select form-select-sm mb-1" aria-label="{{ 'hackathon_wishlist.ui.destination'|trans }}" {{ sylius_test_html_attribute('wishlist-destination') }}>
+                {% for list in lists %}
+                    <option value="{{ list.id }}">{{ list.name }}{% if hackathon_wishlist_in(list, variant) %} &#10003;{% endif %}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
         <button type="submit" class="btn btn-sm btn-outline-secondary" {{ sylius_test_html_attribute('add-to-wishlist') }}>
             {% if hackathon_wishlist_has(variant) %}
                 &#9829; {{ 'hackathon_wishlist.ui.in_wishlist'|trans }}

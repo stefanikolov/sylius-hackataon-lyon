@@ -1,0 +1,18 @@
+{% extends '@SyliusShop/shared/layout/base.html.twig' %}
+
+{% block title %}{{ 'hackathon_wishlist.ui.delete_title'|trans }} | {{ parent() }}{% endblock %}
+
+{# Confirmation step: nothing is deleted until this form is submitted. #}
+{% block content %}
+    <div class="container my-5" style="max-width: 640px;" {{ sylius_test_html_attribute('wishlist-delete-page') }}>
+        <h1 class="mb-3">{{ 'hackathon_wishlist.ui.delete_title'|trans }}</h1>
+        <p class="lead">{{ 'hackathon_wishlist.ui.delete_question'|trans({'%name%': wishlist.name, '%count%': wishlist.items|length}) }}</p>
+        <p class="text-muted">{{ 'hackathon_wishlist.ui.delete_hint'|trans }}</p>
+
+        <form action="{{ path('hackathon_wishlist_delete', {id: wishlist.id}) }}" method="post" class="d-flex gap-2">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('hackathon_wishlist') }}">
+            <button type="submit" class="btn btn-danger" {{ sylius_test_html_attribute('wishlist-confirm-delete') }}>{{ 'hackathon_wishlist.ui.confirm_delete'|trans }}</button>
+            <a href="{{ path('hackathon_wishlist_show', {id: wishlist.id}) }}" class="btn btn-outline-secondary">{{ 'hackathon_wishlist.ui.cancel'|trans }}</a>
+        </form>
+    </div>
+{% endblock %}

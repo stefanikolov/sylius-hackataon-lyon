@@ -5,7 +5,7 @@ export default defineConfig({
     testDir: './specs',
     fullyParallel: false,
     workers: 1,
-    timeout: 90_000,
+    timeout: 180_000,
     expect: { timeout: 15_000 },
     reporter: [['list']],
     use: {

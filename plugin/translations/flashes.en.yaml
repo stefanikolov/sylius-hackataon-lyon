@@ -1,10 +1,19 @@
 hackathon_wishlist:
     flash:
         added: The product was added to your wishlist.
+        added_to: 'The product was added to your wishlist "%name%".'
         already_added: This product is already in your wishlist.
+        already_added_to: 'This product is already in your wishlist "%name%".'
         removed: The product was removed from your wishlist.
+        moved: 'The product was moved to "%name%".'
         not_found: This product cannot be added to the wishlist.
         invalid_token: The form expired. Please try again.
         nothing_selected: Select at least one product first.
         added_to_cart: The selected products were added to your cart.
         not_added_to_cart: Some products could not be added to your cart because they are unavailable.
+        created: The wishlist was created.
+        renamed: The wishlist was renamed.
+        deleted: The wishlist was deleted.
+        name_required: A wishlist name is required.
+        name_too_long: The wishlist name cannot be longer than 100 characters.
+        name_taken: You already have a wishlist with this name.

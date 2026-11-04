@@ -54,11 +54,36 @@ Existing wishlists are kept: schema changes only ever add tables or columns thro
 Wishlist entries are **product variants** (the purchasable thing). On product pages and cards the first
 enabled variant is saved.
 
+## Stage 2 - multiple named wishlists
+
+A customer or guest can own many wishlists. Each one has a name and its own products.
+
+| Feature | How |
+|---|---|
+| Create, rename, delete | Forms on `/{_locale}/wishlist`. Deleting asks for confirmation on a separate page. |
+| Names | Cannot be empty or only whitespace, max 100 characters, unique per owner (case-insensitive). |
+| Choose the destination | When there is more than one list, a select next to "Add to Wishlist" (product page and product cards). Without a choice the first list is used and `My Favorites` is created if there is none. |
+| Same product in several lists | Yes, but only once per list (unique constraint on (wishlist, variant)). |
+| Move a product | "Move" on a row, to another list of the same owner. |
+| Guests | All guest lists share one token in the `hackathon_wishlist_token` cookie. |
+| Login | Guest lists become the customer's. A list with the same name is merged, without duplicates. |
+| Privacy | Every list and item is looked up through `WishlistProvider`, so another visitor's list answers 404. |
+| Cart | Add to cart works inside each list and never changes the lists. |
+
+### Upgrading from Stage 1
+
+Run `php bin/console doctrine:migrations:migrate`. The migration adds the list name and drops the "one list per owner" constraints. Every Stage 1 wishlist becomes a list named `My Favorites` with all its products.
+
 ## Routes
 
 | Route | Method | Path |
 |---|---|---|
-| `hackathon_wishlist_index` | GET | `/{_locale}/wishlist` |
+| `hackathon_wishlist_index` | GET | `/{_locale}/wishlist` (the default list) |
+| `hackathon_wishlist_show` | GET | `/{_locale}/wishlist/{id}` |
+| `hackathon_wishlist_create` | POST | `/{_locale}/wishlist/create` |
+| `hackathon_wishlist_rename` | POST | `/{_locale}/wishlist/{id}/rename` |
+| `hackathon_wishlist_delete` | GET, POST | `/{_locale}/wishlist/{id}/delete` (confirmation, then delete) |
+| `hackathon_wishlist_move` | POST | `/{_locale}/wishlist/move/{itemId}` |
 | `hackathon_wishlist_add` | POST | `/{_locale}/wishlist/add/{variantId}` |
 | `hackathon_wishlist_remove` | POST | `/{_locale}/wishlist/remove/{itemId}` |
 | `hackathon_wishlist_add_to_cart` | POST | `/{_locale}/wishlist/add-to-cart` (`items[]`) |

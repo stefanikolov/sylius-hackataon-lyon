@@ -1,13 +1,27 @@
 hackathon_wishlist:
     ui:
         title: Wishlist
+        my_wishlists: My wishlists
         add: Add to Wishlist
         in_wishlist: In your wishlist
+        destination: Destination wishlist
         product: Product
         price: Price
         remove: Remove
+        move: Move
+        move_to: Move to another wishlist
         add_to_cart: Add to Cart
         add_selected_to_cart: Add Selected to Cart
         continue_shopping: Continue shopping
         empty: Your wishlist is empty. Save products you like and find them here later.
         unavailable: Currently unavailable
+        new_wishlist: New wishlist
+        name_placeholder: e.g. Birthday
+        create: Create
+        rename: Rename
+        delete_list: Delete wishlist
+        delete_title: Delete wishlist
+        delete_question: 'Delete the wishlist "%name%" with %count% product(s)?'
+        delete_hint: The products stay in the store and in your other wishlists. This cannot be undone.
+        confirm_delete: Yes, delete
+        cancel: Cancel
