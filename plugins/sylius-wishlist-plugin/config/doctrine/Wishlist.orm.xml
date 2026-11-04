@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<doctrine-mapping
+        xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                            http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd"
+>
+    <mapped-superclass name="MarkApp\SyliusWishlistPlugin\Entity\Wishlist" table="mark_app_wishlist">
+        <indexes>
+            <index name="idx_mark_app_wishlist_updated_at" columns="updated_at" />
+        </indexes>
+
+        <id name="id" column="id" type="integer">
+            <generator strategy="AUTO" />
+        </id>
+
+        <field name="name" column="name" type="string" length="100" />
+        <field name="accessToken" column="access_token" type="string" length="64" unique="true" nullable="true" />
+        <field name="shareToken" column="share_token" type="string" length="64" unique="true" />
+        <field name="public" column="is_public" type="boolean" />
+        <field name="createdAt" column="created_at" type="datetime_immutable" />
+        <field name="updatedAt" column="updated_at" type="datetime_immutable" />
+
+        <many-to-one field="customer" target-entity="Sylius\Component\Core\Model\CustomerInterface">
+            <join-column name="customer_id" nullable="true" on-delete="CASCADE" />
+        </many-to-one>
+
+        <one-to-many field="items" target-entity="MarkApp\SyliusWishlistPlugin\Entity\WishlistItemInterface" mapped-by="wishlist" orphan-removal="true">
+            <cascade>
+                <cascade-all />
+            </cascade>
+            <order-by>
+                <order-by-field name="id" direction="ASC" />
+            </order-by>
+        </one-to-many>
+    </mapped-superclass>
+</doctrine-mapping>
