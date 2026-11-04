@@ -1,0 +1,19 @@
+{
+    "name": "stefanikolov/sylius-wishlist-plugin",
+    "description": "Wishlist plugin for Sylius 2.x (PS-Summit hackathon).",
+    "type": "sylius-plugin",
+    "license": "MIT",
+    "keywords": ["sylius", "sylius-plugin", "wishlist"],
+    "require": {
+        "php": "^8.3",
+        "sylius/sylius": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Hackathon\\SyliusWishlistPlugin\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

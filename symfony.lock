@@ -191,6 +191,9 @@
             "ref": "1019e5c08d4821cb9b77f4891f8e9c31ff20ac6f"
         }
     },
+    "stefanikolov/sylius-wishlist-plugin": {
+        "version": "dev-main"
+    },
     "stof/doctrine-extensions-bundle": {
         "version": "1.12",
         "recipe": {

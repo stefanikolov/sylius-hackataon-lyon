@@ -1,0 +1,10 @@
+{# Link to the wishlist page with a live item counter, shown in the shop header. #}
+<div class="col-auto">
+    <a href="{{ path('hackathon_wishlist_index') }}" class="btn btn-transparent px-0" {{ sylius_test_html_attribute('wishlist-link') }}>
+        &#9825; {{ 'hackathon_wishlist.ui.title'|trans }}
+        {% set count = hackathon_wishlist_count() %}
+        {% if count > 0 %}
+            <span class="badge rounded-pill bg-primary" {{ sylius_test_html_attribute('wishlist-count') }}>{{ count }}</span>
+        {% endif %}
+    </a>
+</div>

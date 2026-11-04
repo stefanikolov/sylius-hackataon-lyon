@@ -1,0 +1,13 @@
+hackathon_wishlist:
+    ui:
+        title: Wishlist
+        add: Add to Wishlist
+        in_wishlist: In your wishlist
+        product: Product
+        price: Price
+        remove: Remove
+        add_to_cart: Add to Cart
+        add_selected_to_cart: Add Selected to Cart
+        continue_shopping: Continue shopping
+        empty: Your wishlist is empty. Save products you like and find them here later.
+        unavailable: Currently unavailable

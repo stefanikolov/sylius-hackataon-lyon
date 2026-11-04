@@ -1,0 +1,16 @@
+{# "Add to Wishlist" button. Rendered through Twig hooks on the product page and on every product card. #}
+{% set product = hookable_metadata.context.product %}
+{% set variant = product.enabledVariants.first %}
+
+{% if variant %}
+    <form action="{{ path('hackathon_wishlist_add', {variantId: variant.id}) }}" method="post" class="my-2" {{ sylius_test_html_attribute('wishlist-form') }}>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('hackathon_wishlist') }}">
+        <button type="submit" class="btn btn-sm btn-outline-secondary" {{ sylius_test_html_attribute('add-to-wishlist') }}>
+            {% if hackathon_wishlist_has(variant) %}
+                &#9829; {{ 'hackathon_wishlist.ui.in_wishlist'|trans }}
+            {% else %}
+                &#9825; {{ 'hackathon_wishlist.ui.add'|trans }}
+            {% endif %}
+        </button>
+    </form>
+{% endif %}

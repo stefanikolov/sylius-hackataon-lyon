@@ -68,4 +68,5 @@ return [
     Sylius\RefundPlugin\SyliusRefundPlugin::class => ['all' => true],
     Sylius\AdyenPlugin\SyliusAdyenPlugin::class => ['all' => true],
     Knp\Bundle\GaufretteBundle\KnpGaufretteBundle::class => ['all' => true],
+    Hackathon\SyliusWishlistPlugin\HackathonSyliusWishlistPlugin::class => ['all' => true],
 ];

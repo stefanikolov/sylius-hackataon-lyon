@@ -1,109 +1,169 @@
-<p align="center">
-    <a href="https://sylius.com" target="_blank">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://media.sylius.com/sylius-logo-800-dark.png">
-          <source media="(prefers-color-scheme: light)" srcset="https://media.sylius.com/sylius-logo-800.png">
-          <img alt="Sylius Logo." src="https://media.sylius.com/sylius-logo-800.png">
-        </picture>
-    </a>
-</p>
+# Sylius Wishlist Plugin - PS-Summit Hackathon
 
-<h1 align="center">Sylius Standard Edition</h1>
+A wishlist plugin for Sylius 2.x, built during the PS-Summit Hackathon 2026.
 
-<p align="center">This is Sylius Standard Edition repository for starting new projects.</p>
+This repository contains two things:
 
-## About
+| | What | Why it exists |
+|---|---|---|
+| [`plugin/`](plugin) | **The deliverable.** A reusable, independently installable Sylius plugin (`stefanikolov/sylius-wishlist-plugin`). | The hackathon rules require a plugin that can be installed into any existing store. Anything that only works inside a starter project does not count. |
+| everything else | A standard **Sylius 2.3 application** (Sylius Standard). | A store to install the plugin into, run it and demonstrate it. It contains no wishlist code. |
 
-Sylius is the first decoupled eCommerce framework based on [**Symfony**](http://symfony.com) and [**Doctrine**](http://doctrine-project.org). 
-The highest quality of code, strong testing culture, built-in Agile (BDD) workflow and exceptional flexibility make it the best solution for application tailored to your business requirements. 
-Enjoy being an eCommerce Developer again!
+The only places where the application knows about the plugin are `composer.json` (the path repository and the
+requirement), `config/bundles.php` (the bundle registration) and `symfony.lock`. This is exactly what a store owner
+would get after `composer require`.
 
-Powerful REST API allows for easy integrations and creating unique customer experience on any device.
+> The previous contents of this README (the Sylius Standard readme) are available in the git history.
 
-We're using full-stack Behavior-Driven-Development, with [Behat](http://behat.org)
+## Status
 
-## Documentation
+| Stage | State |
+|---|---|
+| 1 - Basic wishlist (MVP) | Implemented |
+| 2 - 4 | Not released yet |
 
-Documentation is available at [docs.sylius.com](http://docs.sylius.com).
+The Gherkin scenarios of stage 1 are in [`docs/stages/stage-1-wishlist.feature`](docs/stages/stage-1-wishlist.feature).
+They are used as the checklist for the demo.
 
-## Installation
+## Repository map
 
-### Traditional
-```bash
-$ wget http://getcomposer.org/composer.phar
-$ php composer.phar create-project sylius/sylius-standard project
-$ cd project
-$ yarn install
-$ yarn build
-$ php bin/console sylius:install
-$ symfony serve
-$ open http://localhost:8000/
+```
+.
+├── plugin/                          THE PLUGIN (see "Inside the plugin" below)
+├── docs/stages/                     Stage descriptions as Gherkin scenarios
+├── config/bundles.php               Registers the plugin bundle (added by Symfony Flex)
+├── composer.json                    Contains the "path" repository pointing to ./plugin
+├── .env.local                       Local database (not committed): sylius_hackathon
+└── (src, templates, config, ...)    Untouched Sylius Standard application
 ```
 
-For more detailed instruction about traditional way of running Sylius please visit [installation chapter in our docs](https://docs.sylius.com/the-book/sylius-ce-installation).
+### Inside the plugin
 
-### Docker
-
-You can run Sylius and all associated infrastructure dependencies (PHP, Nginx, MySQL, Node) on your machine using only Docker containers. Make sure you have installed [Docker](https://docs.docker.com/get-docker/) on your local machine.
-
-**Option 1: Get the latest release**
-```bash
-LATEST=$(curl -s https://api.github.com/repos/Sylius/Sylius-Standard/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
-curl -L -o sylius-latest.zip https://github.com/Sylius/Sylius-Standard/archive/refs/tags/$LATEST.zip
-unzip sylius-latest.zip
-cd Sylius-Standard-*
+```
+plugin/
+├── composer.json                    Package name, PHP/Sylius constraints, PSR-4 autoload
+├── README.md                        Install and upgrade instructions
+├── config/services.php              Service wiring
+├── src/
+│   ├── HackathonSyliusWishlistPlugin.php
+│   ├── Entity/        Wishlist, WishlistItem
+│   ├── Repository/    WishlistRepository
+│   ├── Provider/      WishlistProvider
+│   ├── Controller/    WishlistController
+│   ├── EventListener/ WishlistCookieListener
+│   ├── Twig/          WishlistExtension
+│   └── Migrations/    Version20261104143025
+├── templates/shop/    button, header_link, index
+└── translations/      messages.en.yaml, flashes.en.yaml
 ```
 
-**Option 2: List available versions**
+| File | What it does | Why it is built this way |
+|---|---|---|
+| `HackathonSyliusWishlistPlugin.php` | The bundle. Registers the Doctrine mapping, the migrations path and the Twig hooks for the storefront. | It is an `AbstractBundle`, so the plugin configures itself. The host application needs no config files, no route import and no template overrides, which keeps installation to `composer require` + migrate. |
+| `Entity/Wishlist.php` | A wishlist. Belongs to a customer **or** to an anonymous visitor (a random token). | One model covers guests and customers, so cart and display code do not care which one it is. |
+| `Entity/WishlistItem.php` | One saved **product variant**, with a unique constraint on (wishlist, variant). | A variant is the thing that can actually be bought and put in the cart (price, stock and options live there). The database constraint guarantees "no duplicates" even if two requests race. |
+| `Repository/WishlistRepository.php` | Finds a wishlist by customer or by guest token. | Lookups stay in one place. A guest token that already belongs to a customer is ignored. |
+| `Provider/WishlistProvider.php` | Decides which wishlist the current visitor has, creates it on demand and merges a guest wishlist into the customer wishlist after login. | Controllers and templates never deal with cookies or login state, they just ask for "the wishlist". |
+| `EventListener/WishlistCookieListener.php` | Writes or removes the guest cookie (`hackathon_wishlist_token`, 1 year, HttpOnly). | The provider can only mark that a cookie is needed, because cookies belong on the response. The listener keeps that concern separate. |
+| `Controller/WishlistController.php` | The wishlist page, add, remove, and add-to-cart (single and multiple). | One small controller, all changes are POST + CSRF. The cart is never touched directly. See "Cart integration". |
+| `Twig/WishlistExtension.php` | Twig functions for the item counter and "is this variant already saved". | Templates on product cards stay free of logic and queries. |
+| `templates/shop/button.html.twig` | The "Add to Wishlist" button. | Used by two hooks (product page and product card), so there is one template. |
+| `templates/shop/header_link.html.twig` | Wishlist link with a counter in the shop header. | Lets customers reach the list from anywhere while browsing. |
+| `templates/shop/index.html.twig` | The wishlist page: name, image, current price, remove, add to cart, empty state, unavailable badge. | Extends the shop layout, so header, footer and styling match the store. |
+| `translations/` | UI texts (`messages`) and flash messages (`flashes`). | Sylius translates flash messages from the `flashes` domain, so they have to be there. |
+| `Migrations/Version20261104143025.php` | Creates the two wishlist tables. | The rules require upgrades without a fresh database. Every future stage adds a **new** migration and never edits an old one. |
+
+## How it fits into Sylius
+
+### Twig hooks instead of template overrides
+
+The buttons are added with Twig hooks, which is how Sylius 2.x wants to be extended:
+
+| Hook | Used for |
+|---|---|
+| `sylius_shop.product.show.content.info.summary` | Button on the product detail page |
+| `sylius_shop.shared.product.card` | Button on every product card in listings |
+| `sylius_shop.base.header.content` | Wishlist link and counter in the header |
+
+*Why:* overriding Sylius templates breaks when Sylius changes them and conflicts with other plugins. A hook adds a
+block next to the existing ones and leaves everything else alone.
+
+### Guests and customers
+
+- **Guest:** the wishlist lives in the database under a random token. The token is stored in a cookie.
+  *Why not browser storage only?* The wishlist page needs current prices and availability from the server anyway, and
+  a database record can be merged into a customer account after login. Browser-only storage cannot do either.
+- **Customer:** the wishlist is linked to the customer, so it survives logout and login.
+- **Login:** when a visitor with a guest wishlist logs in, the guest products are moved into the customer wishlist
+  without duplicates and the cookie is removed.
+
+### Cart integration
+
+"Add to Cart" uses the same pieces Sylius' own product page uses:
+
+1. A cart item is built with Sylius' cart item factory and quantity modifier.
+2. It is validated with Sylius' `sylius` validation group (variant enabled, stock available).
+3. It is added with `sylius.adder.cart_item`.
+
+*Why:* the plugin does not reimplement a cart or any stock rules. If Sylius changes its rules, the wishlist follows.
+The wishlist is never modified by cart actions, and the cart is never modified by wishlist actions, only by the
+explicit "Add to Cart" buttons. Unavailable products stay on the wishlist, are marked, and are refused by the
+server as well, not only by the disabled button.
+
+### Security
+
+- Add, remove and add-to-cart are POST requests protected by a CSRF token.
+- A visitor can only remove items from their own wishlist.
+- The redirect back after adding only goes to the same site.
+
+## Running it locally
+
+Requirements: PHP 8.3, MySQL 8, Node 22 (only to build assets), Composer.
+
 ```bash
-curl -s https://api.github.com/repos/Sylius/Sylius-Standard/releases | grep '"tag_name"' | cut -d'"' -f4 | head -10
+composer install
+# .env.local (not committed) points to a separate database:
+# DATABASE_URL="mysql://root@127.0.0.1:3306/sylius_hackathon?serverVersion=8.4&charset=utf8mb4"
+php bin/console doctrine:database:create --if-not-exists
+php bin/console doctrine:migrations:migrate --no-interaction   # includes the plugin migration
+php bin/console sylius:fixtures:load default --no-interaction  # demo products
+yarn install && yarn build                                     # needs Node >= 22.13
+php -S 127.0.0.1:8000 -t public
 ```
 
-**Option 3: Get a specific version**
-```bash
-VERSION="v2.x.x"  # Replace with desired version
-curl -L -o sylius-$VERSION.zip https://github.com/Sylius/Sylius-Standard/archive/refs/tags/$VERSION.zip
-unzip sylius-$VERSION.zip
-cd Sylius-Standard-*
-```
+- Shop: <http://127.0.0.1:8000/en_US/>
+- Wishlist page: <http://127.0.0.1:8000/en_US/wishlist>
+- Admin: <http://127.0.0.1:8000/admin/login> (fixtures user: `sylius@example.com`)
+- Demo customer: `shop@example.com` / `sylius`. The fixtures leave customers unverified, so mark the account as verified
+  in the database (`sylius_shop_user.verified_at`) before logging in.
 
-**Initialize the project (required for all options):**
-```bash
-make init
-```
-
-For more detailed instruction about Docker way of running Sylius please visit [Docker installation chapter in our docs](https://docs.sylius.com/getting-started-with-sylius/sylius-ce-installation-with-docker).
-
-## Troubleshooting
-
-If something goes wrong, errors & exceptions are logged at the application level:
+## Installing the plugin in another store
 
 ```bash
-$ tail -f var/log/prod.log
-$ tail -f var/log/dev.log
+composer require stefanikolov/sylius-wishlist-plugin
+php bin/console doctrine:migrations:migrate
+php bin/console cache:clear
 ```
 
-## Contributing
+Upgrade steps and a feature table are in [`plugin/README.md`](plugin/README.md).
 
-Would like to help us and build the most developer-friendly eCommerce framework? Start from reading our [Contribution Guide](https://docs.sylius.com/en/latest/contributing/)!
+## Demo script (stage 1)
 
-## Stay Updated
+1. Open a product list, click **Add to Wishlist** on a product: confirmation message, counter in the header.
+2. Click it again: "already in your wishlist", still one entry.
+3. Open a product page and add another product from there.
+4. Open **Wishlist**: name, image, price, remove and add-to-cart buttons. Refresh the page: still there.
+5. Select two products and click **Add Selected to Cart**: they are in the cart, the wishlist is unchanged.
+6. Make a product unavailable (stock 0): it stays visible with a badge and cannot be added to the cart.
+7. Log in as the demo customer: the guest products are merged. Log out and in again: they are still there.
+8. Remove a product, then remove all: empty-state message with a "Continue shopping" link.
 
-If you want to keep up with the updates, [follow the official Sylius account on Twitter](http://twitter.com/Sylius) and [like us on Facebook](https://www.facebook.com/SyliusEcommerce/).
+## Design decisions and limits
 
-## Bug Tracking
-
-If you want to report a bug or suggest an idea, please use [GitHub issues](https://github.com/Sylius/Sylius/issues).
-
-## Community Support
-
-Get Sylius support on [Slack](https://sylius.com/slack), [Forum](https://forum.sylius.com/) or [Stack Overflow](https://stackoverflow.com/questions/tagged/sylius).
-
-## MIT License
-
-Sylius is completely free and released under the [MIT License](https://github.com/Sylius/Sylius/blob/master/LICENSE).
-
-## Authors
-
-Sylius was originally created by [Paweł Jędrzejewski](http://pjedrzejewski.com).
-See the list of [contributors from our awesome community](https://github.com/Sylius/Sylius/contributors).
+- **Variants, not products.** The wishlist stores variants. On product pages and cards the first enabled variant is saved.
+  Products with several variants do not yet offer a variant choice.
+- **Plain forms, no JavaScript.** Pages reload after each action, which the rules allow. Dynamic updates can come later.
+- **English only.** Texts are in `plugin/translations/*.en.yaml`.
+- **No automated tests yet.** Stage 1 was verified against the running store following the scenarios in
+  `docs/stages/stage-1-wishlist.feature`.
+- **Upgrades.** Future stages add new migrations only, so existing wishlist data is preserved.

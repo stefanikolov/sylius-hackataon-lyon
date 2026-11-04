@@ -1,0 +1,87 @@
+{% extends '@SyliusShop/shared/layout/base.html.twig' %}
+
+{% import '@SyliusShop/shared/macro/money.html.twig' as money %}
+
+{% block title %}{{ 'hackathon_wishlist.ui.title'|trans }} | {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="container my-5" {{ sylius_test_html_attribute('wishlist-page') }}>
+        <h1 class="mb-4">{{ 'hackathon_wishlist.ui.title'|trans }}</h1>
+
+        {% if rows is empty %}
+            <div class="text-center py-5" {{ sylius_test_html_attribute('wishlist-empty') }}>
+                <p class="lead">{{ 'hackathon_wishlist.ui.empty'|trans }}</p>
+                <a href="{{ path('sylius_shop_homepage') }}" class="btn btn-primary">{{ 'hackathon_wishlist.ui.continue_shopping'|trans }}</a>
+            </div>
+        {% else %}
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th>{{ 'hackathon_wishlist.ui.product'|trans }}</th>
+                        <th>{{ 'hackathon_wishlist.ui.price'|trans }}</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        {% set product = row.product %}
+                        <tr {{ sylius_test_html_attribute('wishlist-item') }}>
+                            <td>
+                                <input type="checkbox" name="items[]" value="{{ row.item.id }}" form="hackathon-wishlist-bulk"
+                                       {% if not row.available %}disabled{% endif %} aria-label="{{ product.name }}">
+                            </td>
+                            <td style="width: 90px;">
+                                <div class="overflow-hidden bg-light rounded-3" style="width: 72px; height: 96px;">
+                                    {{ component('sylius_shop:main_image', { product: product, class: 'w-100 h-100 object-fit-cover' }) }}
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{ path('sylius_shop_product_show', {slug: product.slug, _locale: product.translation.locale}) }}" {{ sylius_test_html_attribute('wishlist-item-name') }}>{{ product.name }}</a>
+                                {% if not row.variant.product.simple %}
+                                    <div class="text-muted small">{{ row.variant.name ?: row.variant.code }}</div>
+                                {% endif %}
+                                {% if not row.available %}
+                                    <div><span class="badge bg-secondary" {{ sylius_test_html_attribute('wishlist-item-unavailable') }}>{{ 'hackathon_wishlist.ui.unavailable'|trans }}</span></div>
+                                {% endif %}
+                            </td>
+                            <td {{ sylius_test_html_attribute('wishlist-item-price') }}>
+                                {% if row.original_price > row.price %}
+                                    <del class="text-muted">{{ money.convertAndFormat(row.original_price) }}</del>
+                                {% endif %}
+                                {{ money.convertAndFormat(row.price) }}
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-2">
+                                    <form action="{{ path('hackathon_wishlist_add_to_cart') }}" method="post">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('hackathon_wishlist') }}">
+                                        <input type="hidden" name="items[]" value="{{ row.item.id }}">
+                                        <button type="submit" class="btn btn-sm btn-primary" {% if not row.available %}disabled{% endif %} {{ sylius_test_html_attribute('wishlist-add-to-cart') }}>
+                                            {{ 'hackathon_wishlist.ui.add_to_cart'|trans }}
+                                        </button>
+                                    </form>
+                                    <form action="{{ path('hackathon_wishlist_remove', {itemId: row.item.id}) }}" method="post">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('hackathon_wishlist') }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" {{ sylius_test_html_attribute('wishlist-remove') }}>
+                                            {{ 'hackathon_wishlist.ui.remove'|trans }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {# The checkboxes above belong to this form through the "form" attribute, so the row forms are not nested. #}
+            <form id="hackathon-wishlist-bulk" action="{{ path('hackathon_wishlist_add_to_cart') }}" method="post">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('hackathon_wishlist') }}">
+                <button type="submit" class="btn btn-primary" {{ sylius_test_html_attribute('wishlist-add-selected-to-cart') }}>
+                    {{ 'hackathon_wishlist.ui.add_selected_to_cart'|trans }}
+                </button>
+                <a href="{{ path('sylius_shop_homepage') }}" class="btn btn-link">{{ 'hackathon_wishlist.ui.continue_shopping'|trans }}</a>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}
