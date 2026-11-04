@@ -67,6 +67,31 @@ class WishlistRepository extends EntityRepository implements WishlistRepositoryI
         ;
     }
 
+    public function countItemsForCustomer(CustomerInterface $customer): int
+    {
+        return (int) $this->createQueryBuilder('o')
+            ->select('COUNT(item.id)')
+            ->innerJoin('o.items', 'item')
+            ->andWhere('o.customer = :customer')
+            ->setParameter('customer', $customer)
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
+    public function countItemsForGuest(string $accessToken): int
+    {
+        return (int) $this->createQueryBuilder('o')
+            ->select('COUNT(item.id)')
+            ->innerJoin('o.items', 'item')
+            ->andWhere('o.accessToken = :accessToken')
+            ->andWhere('o.customer IS NULL')
+            ->setParameter('accessToken', $accessToken)
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
     public function hasNameForCustomer(CustomerInterface $customer, string $name, ?int $excludedId = null): bool
     {
         $queryBuilder = $this->createQueryBuilder('o')

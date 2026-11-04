@@ -1,0 +1,3 @@
+{% set wishlist = hookable_metadata.context.wishlist %}
+
+{% include '@MarkAppSyliusWishlistPlugin/shop/_items.html.twig' with { wishlist: wishlist, mode: 'owner' } %}

@@ -1,0 +1,20 @@
+mark_app_sylius_wishlist:
+    flash:
+        item_added: Toegevoegd aan "%list%".
+        item_exists: Deze variant staat al op "%list%".
+        list_full: Deze lijst is vol (maximaal %max% producten).
+        item_removed: Verwijderd van je wensenlijst.
+        select_products: Selecteer eerst minstens één product.
+        added_to_cart: '%count% product(en) in je winkelwagen gezet.'
+        not_added_to_cart: '%count% product(en) konden niet worden toegevoegd omdat ze niet beschikbaar zijn.'
+        list_created: Wensenlijst gemaakt.
+        list_renamed: Wensenlijst hernoemd.
+        list_deleted: Wensenlijst verwijderd.
+        invalid_name: Vul een naam in van maximaal 100 tekens.
+        name_taken: Je hebt al een lijst met deze naam.
+        list_limit: Je kunt maximaal %max% lijsten hebben.
+        now_public: Deze lijst is nu openbaar. Iedereen met de link kan hem bekijken.
+        now_private: Deze lijst is nu privé. De link werkt niet meer.
+        list_moved_to_account: Je gastlijst is nu onderdeel van je account.
+        list_restored: Je wensenlijst is op dit apparaat hersteld.
+        variant_unavailable: Deze combinatie is niet beschikbaar.

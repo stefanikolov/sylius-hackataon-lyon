@@ -1,0 +1,14 @@
+{% extends '@SyliusShop/shared/layout/base.html.twig' %}
+
+{% block title %}{{ wishlist.name }} | {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="container mb-auto my-4" {{ sylius_test_html_attribute('wishlist-shared-page') }}>
+        <h1 class="mb-1" {{ sylius_test_html_attribute('wishlist-shared-name') }}>{{ wishlist.name }}</h1>
+        {% if wishlist.customer is not null and wishlist.customer.firstName %}
+            <p class="text-muted">{{ 'mark_app_sylius_wishlist.ui.shared_by'|trans({'%name%': wishlist.customer.firstName}) }}</p>
+        {% endif %}
+
+        {% include '@MarkAppSyliusWishlistPlugin/shop/_items.html.twig' with { wishlist: wishlist, mode: 'shared' } %}
+    </div>
+{% endblock %}

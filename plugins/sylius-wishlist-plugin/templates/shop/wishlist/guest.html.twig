@@ -1,0 +1,27 @@
+{% extends '@SyliusShop/shared/layout/base.html.twig' %}
+
+{% block title %}{{ 'mark_app_sylius_wishlist.ui.wishlist'|trans }} | {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="container mb-auto my-4" {{ sylius_test_html_attribute('wishlist-guest-page') }}>
+        <h1 class="mb-1">{{ 'mark_app_sylius_wishlist.ui.wishlist'|trans }}</h1>
+        <p class="text-muted">{{ 'mark_app_sylius_wishlist.ui.guest_hint'|trans }} <a href="{{ path('sylius_shop_login') }}">{{ 'mark_app_sylius_wishlist.ui.log_in'|trans }}</a></p>
+
+        {% if wishlist is not null %}
+            {% include '@MarkAppSyliusWishlistPlugin/shop/_share_panel.html.twig' with { wishlist: wishlist, panel_id: 'wl-share-url' } %}
+        {% endif %}
+
+        {% include '@MarkAppSyliusWishlistPlugin/shop/_items.html.twig' with { wishlist: wishlist, mode: 'owner' } %}
+
+        {% if wishlist is not null %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="fw-semibold">{{ 'mark_app_sylius_wishlist.ui.restore_link'|trans }}</div>
+                    <div class="form-text mb-2">{{ 'mark_app_sylius_wishlist.ui.restore_hint'|trans }}</div>
+                    <input type="text" class="form-control" readonly onfocus="this.select()"
+                           value="{{ url('mark_app_wishlist_shop_restore', {token: wishlist.accessToken, _locale: sylius.localeCode}) }}">
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

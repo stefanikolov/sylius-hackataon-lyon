@@ -1,0 +1,4 @@
+{% set wishlist = hookable_metadata.context.wishlist %}
+
+<a href="{{ path('mark_app_wishlist_shop_account_index') }}" class="small text-decoration-none">&larr; {{ 'mark_app_sylius_wishlist.ui.back_to_lists'|trans }}</a>
+<h1 class="mt-2" {{ sylius_test_html_attribute('wishlist-name') }}>{{ wishlist.name }}</h1>

@@ -1,0 +1,13 @@
+{# Parameters: product, form_id, with_lists (bool), size ('sm' or ''). #}
+{# The controls point to the wishlist form with the form attribute, so they can sit anywhere on the page, also inside another form. #}
+{% set lists = with_lists ? mark_app_wishlist_customer_lists() : [] %}
+
+{% if lists|length > 1 %}
+    <select name="wishlist" form="{{ form_id }}" class="form-select {{ size == 'sm' ? 'form-select-sm' : '' }} w-auto" aria-label="{{ 'mark_app_sylius_wishlist.ui.choose_list'|trans }}">
+        {% for list in lists %}
+            <option value="{{ list.id }}">{{ list.name }}</option>
+        {% endfor %}
+    </select>
+{% endif %}
+
+<button type="submit" form="{{ form_id }}" class="btn btn-outline-primary {{ size == 'sm' ? 'btn-sm' : '' }}" {{ sylius_test_html_attribute('add-to-wishlist-button') }}>&hearts; {{ 'mark_app_sylius_wishlist.ui.add_to_wishlist'|trans }}</button>

@@ -32,6 +32,16 @@ interface WishlistRepositoryInterface extends RepositoryInterface
 
     public function countByCustomer(CustomerInterface $customer): int;
 
+    /**
+     * The number of products on all lists of the customer, for the counter in the header.
+     */
+    public function countItemsForCustomer(CustomerInterface $customer): int;
+
+    /**
+     * The number of products on the guest wishlist that belongs to the given access token.
+     */
+    public function countItemsForGuest(string $accessToken): int;
+
     public function hasNameForCustomer(CustomerInterface $customer, string $name, ?int $excludedId = null): bool;
 
     /**

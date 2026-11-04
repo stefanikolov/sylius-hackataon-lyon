@@ -1,0 +1,20 @@
+mark_app_sylius_wishlist:
+    flash:
+        item_added: Added to "%list%".
+        item_exists: This variant is already in "%list%".
+        list_full: This list is full (maximum %max% products).
+        item_removed: Removed from your wishlist.
+        select_products: Select at least one product first.
+        added_to_cart: '%count% product(s) added to your cart.'
+        not_added_to_cart: '%count% product(s) could not be added because they are unavailable.'
+        list_created: Wishlist created.
+        list_renamed: Wishlist renamed.
+        list_deleted: Wishlist deleted.
+        invalid_name: Enter a name of at most 100 characters.
+        name_taken: You already have a list with this name.
+        list_limit: You can have at most %max% lists.
+        now_public: This list is now public. Anyone with the link can view it.
+        now_private: This list is now private. Its link no longer works.
+        list_moved_to_account: Your guest list is now part of your account.
+        list_restored: Your wishlist was restored on this device.
+        variant_unavailable: This combination is not available.

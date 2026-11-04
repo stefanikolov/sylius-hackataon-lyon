@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MarkApp\SyliusWishlistPlugin\Entity;
 
 use Sylius\Component\Core\Model\ProductInterface;
+use Sylius\Component\Core\Model\ProductVariantInterface;
 
 class WishlistItem implements WishlistItemInterface
 {
@@ -13,6 +14,8 @@ class WishlistItem implements WishlistItemInterface
     protected ?WishlistInterface $wishlist = null;
 
     protected ?ProductInterface $product = null;
+
+    protected ?ProductVariantInterface $variant = null;
 
     protected \DateTimeImmutable $createdAt;
 
@@ -44,6 +47,16 @@ class WishlistItem implements WishlistItemInterface
     public function setProduct(?ProductInterface $product): void
     {
         $this->product = $product;
+    }
+
+    public function getVariant(): ?ProductVariantInterface
+    {
+        return $this->variant;
+    }
+
+    public function setVariant(?ProductVariantInterface $variant): void
+    {
+        $this->variant = $variant;
     }
 
     public function getCreatedAt(): \DateTimeImmutable

@@ -1,1 +1,51 @@
-# Define your own shop hooks here (sylius_twig_hooks.hooks)
+sylius_twig_hooks:
+    hooks:
+        # Product page. The parent "summary" hook renders for in-stock and out-of-stock products alike,
+        # unlike the "add_to_cart" children, which are skipped when a simple product is sold out.
+        'sylius_shop.product.show.content.info.summary':
+            mark_app_wishlist:
+                template: '@MarkAppSyliusWishlistPlugin/shop/product/show/add_to_wishlist.html.twig'
+                priority: -100
+
+        # Replaces the Sylius "submit" hookable, to put the wishlist button next to "Add to cart".
+        'sylius_shop.product.show.content.info.summary.add_to_cart':
+            submit:
+                template: '@MarkAppSyliusWishlistPlugin/shop/product/show/add_to_cart/submit.html.twig'
+                priority: 0
+
+        # Product listing card.
+        'sylius_shop.shared.product.card':
+            mark_app_wishlist:
+                template: '@MarkAppSyliusWishlistPlugin/shop/product/card/add_to_wishlist.html.twig'
+                priority: -100
+
+        # Header link, between the account links (200) and the cart (100).
+        'sylius_shop.base.header.content':
+            mark_app_wishlist:
+                template: '@MarkAppSyliusWishlistPlugin/shop/header/wishlist_link.html.twig'
+                priority: 150
+
+        # Customer area: overview of all lists.
+        'mark_app_sylius_wishlist.shop.account.wishlists.index.content.main':
+            lists:
+                template: '@MarkAppSyliusWishlistPlugin/shop/account/wishlists/index/lists.html.twig'
+                priority: 0
+
+        'mark_app_sylius_wishlist.shop.account.wishlists.index.content.main.header':
+            title:
+                template: '@MarkAppSyliusWishlistPlugin/shop/account/wishlists/index/title.html.twig'
+                priority: 0
+
+        # Customer area: one list.
+        'mark_app_sylius_wishlist.shop.account.wishlist.index.content.main':
+            details:
+                template: '@MarkAppSyliusWishlistPlugin/shop/account/wishlists/show/details.html.twig'
+                priority: 100
+            items:
+                template: '@MarkAppSyliusWishlistPlugin/shop/account/wishlists/show/items.html.twig'
+                priority: 0
+
+        'mark_app_sylius_wishlist.shop.account.wishlist.index.content.main.header':
+            title:
+                template: '@MarkAppSyliusWishlistPlugin/shop/account/wishlists/show/title.html.twig'
+                priority: 0

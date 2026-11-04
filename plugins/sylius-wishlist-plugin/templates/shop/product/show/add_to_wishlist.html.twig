@@ -1,0 +1,48 @@
+{% set product = hookable_metadata.context.product %}
+{% set form_id = 'wl-add-main-' ~ product.id %}
+
+{#
+    Next to the "Add to cart" button, see add_to_cart/submit.html.twig. That block is not rendered when a simple
+    product is sold out (Sylius shows "out of stock" instead), and a sold-out product is exactly what people put on a
+    wishlist. The same condition as in the Sylius template decides where the button goes.
+#}
+{% set sold_out = product.enabledVariants.empty() or (product.simple and not sylius_inventory_is_available(product.enabledVariants.first)) %}
+
+<div class="{{ sold_out ? 'mb-4' : '' }}" {{ sylius_test_html_attribute('wishlist-product-page') }}>
+    {% include '@MarkAppSyliusWishlistPlugin/shop/product/_add_form.html.twig' with { product: product, form_id: form_id, with_lists: true, size: '', with_controls: sold_out } only %}
+</div>
+
+{#
+    The variant is chosen in the Sylius add-to-cart form, which is a live component that is re-rendered while the visitor
+    picks options. So the choice is read at the moment of clicking and copied into this form. Without JavaScript the
+    default variant is remembered.
+#}
+<script>
+    (function () {
+        var form = document.getElementById('{{ form_id }}');
+
+        if (!form) {
+            return;
+        }
+
+        form.addEventListener('submit', function () {
+            form.querySelectorAll('[data-wishlist-variant]').forEach(function (field) { field.remove(); });
+
+            var source = document.querySelector('form[name="sylius_shop_add_to_cart"]');
+
+            if (!source) {
+                return;
+            }
+
+            source.querySelectorAll('select[name*="[cartItem][variant]"], input[type="radio"][name*="[cartItem][variant]"]:checked').forEach(function (field) {
+                var copy = document.createElement('input');
+
+                copy.type = 'hidden';
+                copy.name = field.name;
+                copy.value = field.value;
+                copy.setAttribute('data-wishlist-variant', '');
+                form.appendChild(copy);
+            });
+        });
+    })();
+</script>

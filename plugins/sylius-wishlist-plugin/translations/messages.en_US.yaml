@@ -1,0 +1,43 @@
+mark_app_sylius_wishlist:
+    form:
+        name: List name
+    ui:
+        wishlist: Wishlist
+        my_wishlists: My wishlists
+        my_wishlists_subtitle: Keep your favourite products in lists and share them with others.
+        add_to_wishlist: Add to wishlist
+        choose_list: Wishlist
+        empty: Your wishlist is empty.
+        continue_shopping: Continue shopping
+        product: Product
+        price: Price
+        availability: Availability
+        available: Available
+        unavailable: Unavailable
+        add_to_cart: Add to cart
+        add_selected_to_cart: Add selected to cart
+        remove: Remove
+        visibility: Visibility
+        public: Public
+        private: Private
+        make_public: Make public
+        make_private: Make private
+        share_link: Link to share this list
+        copy_link: Copy link
+        copied: Copied!
+        share_hint: Anyone with this link can view this list, but cannot change it.
+        private_hint: Only you can see this list. Make it public to get a link you can share.
+        guest_hint: Your list is saved in this browser. Log in to keep several named lists in your account.
+        log_in: Log in
+        restore_link: Restore link
+        restore_hint: Keep this link private. Opening it on another device gives access to this list.
+        shared_by: Shared by %name%
+        no_lists: You have no wishlists yet. Add a product to create one, or create a list below.
+        lists_used: '%count% of %max% lists used'
+        item_count: '%count% items'
+        create_list: Create a new list
+        create: Create list
+        rename: Rename
+        delete: Delete this list
+        delete_confirm: Delete this list and everything on it?
+        back_to_lists: Back to my wishlists

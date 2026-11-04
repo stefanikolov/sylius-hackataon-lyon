@@ -8,7 +8,7 @@
 >
     <mapped-superclass name="MarkApp\SyliusWishlistPlugin\Entity\WishlistItem" table="mark_app_wishlist_item">
         <unique-constraints>
-            <unique-constraint name="uniq_mark_app_wishlist_item_product" columns="wishlist_id,product_id" />
+            <unique-constraint name="uniq_mark_app_wishlist_item_variant" columns="wishlist_id,variant_id" />
         </unique-constraints>
 
         <id name="id" column="id" type="integer">
@@ -23,6 +23,10 @@
 
         <many-to-one field="product" target-entity="Sylius\Component\Core\Model\ProductInterface">
             <join-column name="product_id" nullable="false" on-delete="CASCADE" />
+        </many-to-one>
+
+        <many-to-one field="variant" target-entity="Sylius\Component\Core\Model\ProductVariantInterface">
+            <join-column name="variant_id" nullable="false" on-delete="CASCADE" />
         </many-to-one>
     </mapped-superclass>
 </doctrine-mapping>

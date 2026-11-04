@@ -1,0 +1,40 @@
+{# Parameters: wishlist, panel_id. Lets the owner switch between private and public and copy the public link. #}
+{% import '@SyliusShop/shared/buttons.html.twig' as buttons %}
+
+<div class="card mb-4" {{ sylius_test_html_attribute('wishlist-share-panel') }}>
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="fw-semibold">
+                {{ 'mark_app_sylius_wishlist.ui.visibility'|trans }}:
+                {% if wishlist.public %}
+                    <span class="badge text-bg-success">{{ 'mark_app_sylius_wishlist.ui.public'|trans }}</span>
+                {% else %}
+                    <span class="badge text-bg-secondary">{{ 'mark_app_sylius_wishlist.ui.private'|trans }}</span>
+                {% endif %}
+            </div>
+            <form method="post" action="{{ path('mark_app_wishlist_shop_visibility') }}">
+                {% include '@MarkAppSyliusWishlistPlugin/shop/_guard.html.twig' %}
+                <input type="hidden" name="id" value="{{ wishlist.id }}">
+                <input type="hidden" name="public" value="{{ wishlist.public ? '0' : '1' }}">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                    {{ (wishlist.public ? 'mark_app_sylius_wishlist.ui.make_private' : 'mark_app_sylius_wishlist.ui.make_public')|trans }}
+                </button>
+            </form>
+        </div>
+
+        {% if wishlist.public %}
+            <label class="form-label small" for="{{ panel_id }}">{{ 'mark_app_sylius_wishlist.ui.share_link'|trans }}</label>
+            <div class="input-group">
+                <input type="text" id="{{ panel_id }}" class="form-control" readonly onfocus="this.select()"
+                       value="{{ url('mark_app_wishlist_shop_share', {token: wishlist.shareToken, _locale: sylius.localeCode}) }}">
+                <button type="button" class="btn btn-outline-primary" data-done="{{ 'mark_app_sylius_wishlist.ui.copied'|trans }}"
+                        onclick="var i=document.getElementById('{{ panel_id }}');i.select();if(navigator.clipboard){navigator.clipboard.writeText(i.value);}else{document.execCommand('copy');}this.textContent=this.dataset.done;">
+                    {{ 'mark_app_sylius_wishlist.ui.copy_link'|trans }}
+                </button>
+            </div>
+            <div class="form-text">{{ 'mark_app_sylius_wishlist.ui.share_hint'|trans }}</div>
+        {% else %}
+            <div class="text-muted small">{{ 'mark_app_sylius_wishlist.ui.private_hint'|trans }}</div>
+        {% endif %}
+    </div>
+</div>

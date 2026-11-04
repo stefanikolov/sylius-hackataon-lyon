@@ -1,0 +1,5 @@
+{# Hidden fields every wishlist write form needs: CSRF token, the page to return to and two bot traps. #}
+<input type="hidden" name="_token" value="{{ csrf_token('mark_app_wishlist') }}">
+<input type="hidden" name="_redirect" value="{{ app.request.requestUri }}">
+<input type="hidden" name="_ts" value="{{ 'now'|date('U') }}">
+<input type="text" name="_website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">

@@ -1,0 +1,43 @@
+mark_app_sylius_wishlist:
+    form:
+        name: Naam van de lijst
+    ui:
+        wishlist: Wensenlijst
+        my_wishlists: Mijn wensenlijsten
+        my_wishlists_subtitle: Bewaar je favoriete producten in lijsten en deel ze met anderen.
+        add_to_wishlist: Op wensenlijst
+        choose_list: Wensenlijst
+        empty: Je wensenlijst is leeg.
+        continue_shopping: Verder winkelen
+        product: Product
+        price: Prijs
+        availability: Beschikbaarheid
+        available: Beschikbaar
+        unavailable: Niet beschikbaar
+        add_to_cart: In winkelwagen
+        add_selected_to_cart: Selectie in winkelwagen
+        remove: Verwijderen
+        visibility: Zichtbaarheid
+        public: Openbaar
+        private: Privé
+        make_public: Openbaar maken
+        make_private: Privé maken
+        share_link: Link om deze lijst te delen
+        copy_link: Link kopiëren
+        copied: Gekopieerd!
+        share_hint: Iedereen met deze link kan de lijst bekijken, maar niet wijzigen.
+        private_hint: Alleen jij ziet deze lijst. Maak hem openbaar om een link te krijgen die je kunt delen.
+        guest_hint: Je lijst wordt in deze browser bewaard. Log in om meerdere lijsten met een naam in je account te houden.
+        log_in: Inloggen
+        restore_link: Herstellink
+        restore_hint: Houd deze link privé. Als je hem op een ander apparaat opent, krijg je toegang tot deze lijst.
+        shared_by: Gedeeld door %name%
+        no_lists: Je hebt nog geen wensenlijsten. Voeg een product toe om er een te maken, of maak hieronder een lijst.
+        lists_used: '%count% van %max% lijsten gebruikt'
+        item_count: '%count% producten'
+        create_list: Nieuwe lijst maken
+        create: Lijst maken
+        rename: Hernoemen
+        delete: Deze lijst verwijderen
+        delete_confirm: Deze lijst en alles erop verwijderen?
+        back_to_lists: Terug naar mijn wensenlijsten

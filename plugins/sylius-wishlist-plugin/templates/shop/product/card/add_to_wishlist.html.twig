@@ -1,0 +1,5 @@
+{% set product = hookable_metadata.context.product %}
+
+<div class="mt-2">
+    {% include '@MarkAppSyliusWishlistPlugin/shop/product/_add_form.html.twig' with { product: product, form_id: 'wl-add-card-' ~ product.id, with_lists: false, size: 'sm', with_controls: true } only %}
+</div>

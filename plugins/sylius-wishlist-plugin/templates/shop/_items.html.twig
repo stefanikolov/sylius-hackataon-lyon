@@ -1,0 +1,91 @@
+{# Parameters: wishlist, mode ('owner' or 'shared'). Lists the entries with name, image, price, availability and actions. #}
+{% import '@SyliusShop/shared/macro/money.html.twig' as money %}
+
+{% set shared = mode == 'shared' %}
+{% set cart_action = shared ? path('mark_app_wishlist_shop_share_cart', {token: wishlist.shareToken}) : path('mark_app_wishlist_shop_cart') %}
+
+{% if wishlist is null or wishlist.items.empty %}
+    <div class="alert alert-info" {{ sylius_test_html_attribute('wishlist-empty') }}>
+        {{ 'mark_app_sylius_wishlist.ui.empty'|trans }}
+        <a href="{{ path('sylius_shop_homepage') }}" class="alert-link">{{ 'mark_app_sylius_wishlist.ui.continue_shopping'|trans }}</a>
+    </div>
+{% else %}
+    <form id="wl-cart-selected" method="post" action="{{ cart_action }}">
+        {% include '@MarkAppSyliusWishlistPlugin/shop/_guard.html.twig' %}
+        <input type="hidden" name="wishlist" value="{{ wishlist.id }}">
+    </form>
+
+    <div class="table-responsive">
+        <table class="table align-middle" {{ sylius_test_html_attribute('wishlist-items') }}>
+            <thead>
+                <tr>
+                    <th scope="col" style="width: 2rem"></th>
+                    <th scope="col">{{ 'mark_app_sylius_wishlist.ui.product'|trans }}</th>
+                    <th scope="col">{{ 'mark_app_sylius_wishlist.ui.price'|trans }}</th>
+                    <th scope="col">{{ 'mark_app_sylius_wishlist.ui.availability'|trans }}</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in wishlist.items %}
+                    {% set product = item.product %}
+                    {% set variant = item.variant %}
+                    {% set purchasable = mark_app_wishlist_is_purchasable(item) %}
+                    <tr {{ sylius_test_html_attribute('wishlist-item') }}>
+                        <td>
+                            <input type="checkbox" name="items[]" value="{{ item.id }}" form="wl-cart-selected" class="form-check-input"
+                                   aria-label="{{ product.name }}" {{ purchasable ? '' : 'disabled' }}>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 4rem">{{ component('sylius_shop:main_image', { product: product, class: 'w-100 rounded' }) }}</div>
+                                <div>
+                                    <a href="{{ path('sylius_shop_product_show', {slug: product.slug, _locale: sylius.localeCode}) }}" class="fw-semibold text-decoration-none" {{ sylius_test_html_attribute('wishlist-item-name') }}>{{ product.name }}</a>
+                                    {% if variant is not null and variant.optionValues|length > 0 %}
+                                        <div>
+                                            {% for option_value in variant.optionValues %}
+                                                <span class="badge text-bg-light text-muted">{{ option_value.option.name }}: {{ option_value.value }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td {{ sylius_test_html_attribute('wishlist-item-price') }}>
+                            {% if variant is not null %}{{ money.calculatePrice(variant) }}{% endif %}
+                        </td>
+                        <td>
+                            {% if purchasable %}
+                                <span class="badge text-bg-success">{{ 'mark_app_sylius_wishlist.ui.available'|trans }}</span>
+                            {% else %}
+                                <span class="badge text-bg-danger" {{ sylius_test_html_attribute('wishlist-item-unavailable') }}>{{ 'mark_app_sylius_wishlist.ui.unavailable'|trans }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <button type="submit" form="wl-cart-{{ item.id }}" class="btn btn-sm btn-primary" {{ purchasable ? '' : 'disabled' }}>{{ 'mark_app_sylius_wishlist.ui.add_to_cart'|trans }}</button>
+                            {% if not shared %}
+                                <button type="submit" form="wl-remove-{{ item.id }}" class="btn btn-sm btn-outline-danger">{{ 'mark_app_sylius_wishlist.ui.remove'|trans }}</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <button type="submit" form="wl-cart-selected" class="btn btn-primary" {{ sylius_test_html_attribute('wishlist-add-selected') }}>{{ 'mark_app_sylius_wishlist.ui.add_selected_to_cart'|trans }}</button>
+
+    {# One small form per action: nested forms are invalid HTML, so the buttons above point to these with the form attribute. #}
+    {% for item in wishlist.items %}
+        <form id="wl-cart-{{ item.id }}" method="post" action="{{ cart_action }}">
+            {% include '@MarkAppSyliusWishlistPlugin/shop/_guard.html.twig' %}
+            <input type="hidden" name="wishlist" value="{{ wishlist.id }}">
+            <input type="hidden" name="items[]" value="{{ item.id }}">
+        </form>
+        {% if not shared %}
+            <form id="wl-remove-{{ item.id }}" method="post" action="{{ path('mark_app_wishlist_shop_remove', {id: item.id}) }}">
+                {% include '@MarkAppSyliusWishlistPlugin/shop/_guard.html.twig' %}
+            </form>
+        {% endif %}
+    {% endfor %}
+{% endif %}

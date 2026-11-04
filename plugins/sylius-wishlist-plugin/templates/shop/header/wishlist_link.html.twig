@@ -1,0 +1,13 @@
+{# Same markup as the cart button next to it: a column of the header row, an icon, a label on large screens, and a counter. #}
+{# The heart is the Tabler "heart" icon, inlined because the icon set bundled with Sylius does not contain it. #}
+{% set count = mark_app_wishlist_item_count() %}
+
+<div class="col-auto">
+    <a href="{{ path('mark_app_wishlist_shop_index') }}" class="btn btn-icon btn-transparent px-0 position-relative" aria-label="{{ 'mark_app_sylius_wishlist.ui.wishlist'|trans }}" {{ sylius_test_html_attribute('wishlist-header-link') }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon" fill="currentColor" height="1em" width="1em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 12.572l-7.5 7.428l-7.5-7.428a5 5 0 1 1 7.5-6.566a5 5 0 1 1 7.5 6.572"/></svg>
+        <span class="d-none d-lg-block ps-1">{{ 'mark_app_sylius_wishlist.ui.wishlist'|trans }}</span>
+        {% if count > 0 %}
+            <span class="position-absolute top-0 start-0 badge rounded-pill bg-primary" {{ sylius_test_html_attribute('wishlist-count', count) }}>{{ count }}</span>
+        {% endif %}
+    </a>
+</div>

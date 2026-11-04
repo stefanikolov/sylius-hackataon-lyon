@@ -1,0 +1,9 @@
+{# Parameters: product, form_id, with_lists (bool), size ('sm' or ''), with_controls (bool). #}
+{# The form always carries the hidden fields; the visible controls are inside it only when with_controls is true. #}
+<form id="{{ form_id }}" method="post" action="{{ path('mark_app_wishlist_shop_add', {code: product.code}) }}" {{ sylius_test_html_attribute('add-to-wishlist-form') }}>
+    {% include '@MarkAppSyliusWishlistPlugin/shop/_guard.html.twig' %}
+
+    {% if with_controls %}
+        {% include '@MarkAppSyliusWishlistPlugin/shop/product/_controls.html.twig' with { product: product, form_id: form_id, with_lists: with_lists, size: size } only %}
+    {% endif %}
+</form>

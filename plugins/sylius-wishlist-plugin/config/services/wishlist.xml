@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container
+        xmlns="http://symfony.com/schema/dic/services"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd"
+>
+    <services>
+        <!-- Services -->
+        <service id="MarkApp\SyliusWishlistPlugin\Service\TokenGenerator"></service>
+        <service id="MarkApp\SyliusWishlistPlugin\Service\GuestCookie"></service>
+        <service id="MarkApp\SyliusWishlistPlugin\Service\Flasher"></service>
+        <service id="MarkApp\SyliusWishlistPlugin\Service\CartReport"></service>
+        <service id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager">
+            <argument type="service" id="mark_app_sylius_wishlist.repository.wishlist" />
+            <argument type="service" id="mark_app_sylius_wishlist.factory.wishlist" />
+            <argument type="service" id="mark_app_sylius_wishlist.factory.wishlist_item" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\TokenGenerator" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver">
+            <argument type="service" id="sylius.context.customer" />
+            <argument type="service" id="mark_app_sylius_wishlist.repository.wishlist" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\GuestCookie" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard">
+            <argument type="service" id="security.csrf.token_manager" />
+            <argument type="service" id="limiter.mark_app_wishlist_write" />
+            <argument type="service" id="limiter.mark_app_wishlist_guest_create" />
+            <argument type="service" id="limiter.mark_app_wishlist_token_miss" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Service\RedirectResolver">
+            <argument type="service" id="router" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Service\ProductAvailability">
+            <argument type="service" id="sylius.resolver.product_variant" />
+            <argument type="service" id="sylius.checker.inventory.availability" />
+            <argument type="service" id="sylius.context.channel" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Service\CartAdder">
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\ProductAvailability" />
+            <argument type="service" id="sylius.context.cart" />
+            <argument type="service" id="sylius.factory.order_item" />
+            <argument type="service" id="sylius.modifier.order_item_quantity" />
+            <argument type="service" id="sylius.modifier.order" />
+            <argument type="service" id="sylius.checker.inventory.availability" />
+            <argument type="service" id="sylius.repository.order" />
+        </service>
+
+        <!-- Form, Twig, console -->
+        <service id="MarkApp\SyliusWishlistPlugin\Form\Type\WishlistType">
+            <argument>%mark_app_sylius_wishlist.model.wishlist.class%</argument>
+            <argument type="collection">
+                <argument>Default</argument>
+            </argument>
+            <tag name="form.type" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Twig\WishlistExtension">
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="mark_app_sylius_wishlist.repository.wishlist" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\ProductAvailability" />
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\GuestCookie" />
+            <tag name="twig.extension" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Command\CleanupGuestWishlistsCommand">
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <tag name="console.command" />
+        </service>
+
+        <!-- Event listeners -->
+        <service id="MarkApp\SyliusWishlistPlugin\EventListener\ResponseListener">
+            <tag name="kernel.event_listener" event="kernel.response" method="onKernelResponse" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\EventListener\MergeGuestWishlistListener">
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\GuestCookie" />
+            <argument type="service" id="mark_app_sylius_wishlist.repository.wishlist" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <tag name="kernel.event_listener" event="Symfony\Component\Security\Http\Event\LoginSuccessEvent" method="__invoke" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Menu\AccountMenuListener">
+            <tag name="kernel.event_listener" event="sylius.menu.shop.account" method="__invoke" />
+        </service>
+
+        <!-- Controllers -->
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\IndexController" public="true">
+            <argument type="service" id="twig" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="router" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\AccountIndexController" public="true">
+            <argument type="service" id="twig" />
+            <argument type="service" id="form.factory" />
+            <argument type="service" id="router" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="mark_app_sylius_wishlist.repository.wishlist" />
+            <argument type="service" id="mark_app_sylius_wishlist.factory.wishlist" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\AccountShowController" public="true">
+            <argument type="service" id="twig" />
+            <argument type="service" id="form.factory" />
+            <argument type="service" id="router" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="mark_app_sylius_wishlist.factory.wishlist" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\CreateController" public="true">
+            <argument type="service" id="form.factory" />
+            <argument type="service" id="router" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\Flasher" />
+            <argument type="service" id="mark_app_sylius_wishlist.factory.wishlist" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\RenameController" public="true">
+            <argument type="service" id="form.factory" />
+            <argument type="service" id="router" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\Flasher" />
+            <argument type="service" id="mark_app_sylius_wishlist.factory.wishlist" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\DeleteController" public="true">
+            <argument type="service" id="router" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\Flasher" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\VisibilityController" public="true">
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\Flasher" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\RedirectResolver" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\AddItemController" public="true">
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\Flasher" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\RedirectResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\GuestCookie" />
+            <argument type="service" id="sylius.repository.product" />
+            <argument type="service" id="sylius.context.channel" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\ProductAvailability" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\RemoveItemController" public="true">
+            <argument type="service" id="mark_app_sylius_wishlist.repository.wishlist_item" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\Flasher" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\RedirectResolver" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\AddToCartController" public="true">
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\CartAdder" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\CartReport" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\Flasher" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\RedirectResolver" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\ShareController" public="true">
+            <argument type="service" id="twig" />
+            <argument type="service" id="mark_app_sylius_wishlist.repository.wishlist" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\ShareAddToCartController" public="true">
+            <argument type="service" id="mark_app_sylius_wishlist.repository.wishlist" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\CartAdder" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\CartReport" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\Flasher" />
+            <argument type="service" id="router" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="MarkApp\SyliusWishlistPlugin\Controller\Shop\RestoreController" public="true">
+            <argument type="service" id="mark_app_sylius_wishlist.repository.wishlist" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistAccessResolver" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WishlistManager" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\WriteGuard" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\GuestCookie" />
+            <argument type="service" id="MarkApp\SyliusWishlistPlugin\Service\Flasher" />
+            <argument type="service" id="router" />
+            <tag name="controller.service_arguments" />
+        </service>
+    </services>
+</container>
