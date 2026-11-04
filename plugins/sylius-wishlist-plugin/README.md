@@ -25,6 +25,22 @@ customers can keep several named lists, and every list can be shared with a link
 - **Bot protection:** CSRF token, rate limiting, honeypot and time trap for guests, `noindex` on all wishlist pages,
   a cleanup command for abandoned guest lists.
 
+## Administration (read-only)
+
+Administrators get a "Wishlists" entry in the Customers menu: a grid of all lists (name, owner with e-mail or "Guest",
+number of products, visibility, last change), searchable by customer (full name, part of a name, or e-mail), by list
+name and by registered/guest owner, and a detail page per list with its products (image, name, variant, price per
+channel). It is strictly read-only: only a listing and a detail route exist, and the secret guest and share tokens are
+never shown. Administrators can see private lists too, so mention this in your privacy policy.
+
+Import the administration routes in `config/routes/mark_app_sylius_wishlist_admin.yaml`:
+
+```yaml
+mark_app_sylius_wishlist_admin:
+    resource: "@MarkAppSyliusWishlistPlugin/config/routes/admin.yaml"
+    prefix: '/%sylius_admin.path_name%'
+```
+
 ## Requirements
 
 - Sylius 2.0 or newer, PHP 8.2 or newer
@@ -83,6 +99,8 @@ bin/console cache:clear
 | 1.0.0 (Stage 1) | `Version20261104145200` | the wishlist and wishlist item tables |
 | 1.0.0 (Stage 1) | `Version20261104150833` | the chosen variant on every item (existing items get the product's first variant) |
 | 2.0.0 (Stage 2) | `Version20261104170000` | several lists per guest; one entry per product per list (a list that held several variants of one product keeps the newest entry) |
+
+Version 3.0.0 (read-only administration) needs no migration; add the administration route import above.
 
 Migrations run in their own namespace, `MarkApp\SyliusWishlistPlugin\Migrations`, and are also reversible.
 

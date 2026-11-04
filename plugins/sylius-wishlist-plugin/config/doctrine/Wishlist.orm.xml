@@ -27,7 +27,7 @@
             <join-column name="customer_id" nullable="true" on-delete="CASCADE" />
         </many-to-one>
 
-        <one-to-many field="items" target-entity="MarkApp\SyliusWishlistPlugin\Entity\WishlistItemInterface" mapped-by="wishlist" orphan-removal="true">
+        <one-to-many field="items" target-entity="MarkApp\SyliusWishlistPlugin\Entity\WishlistItemInterface" mapped-by="wishlist" orphan-removal="true" fetch="EXTRA_LAZY">
             <cascade>
                 <cascade-all />
             </cascade>

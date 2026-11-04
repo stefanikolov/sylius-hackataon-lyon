@@ -1,4 +1,5 @@
 # Put your plugin configuration here
 
 imports:
+    - { resource: "grids/**/*.yaml" }
     - { resource: "twig_hooks/**/*.yaml" }

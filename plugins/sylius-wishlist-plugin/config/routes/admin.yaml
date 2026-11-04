@@ -1,1 +1,23 @@
-# Define your own admin routes here
+# Read-only administration of wishlists: a listing (grid) and a detail page, nothing that changes data.
+# The host imports this file with the administration prefix, so these paths sit behind the admin firewall.
+mark_app_wishlist_admin_wishlist:
+    resource: |
+        alias: mark_app_sylius_wishlist.wishlist
+        section: admin
+        templates: "@SyliusAdmin\\shared\\crud"
+        only: ['index']
+        grid: mark_app_wishlist_admin_wishlist
+        permission: true
+    type: sylius.resource
+
+mark_app_sylius_wishlist_admin_wishlist_show:
+    path: /wishlists/{id}
+    methods: [GET]
+    requirements:
+        id: '\d+'
+    defaults:
+        _controller: mark_app_sylius_wishlist.controller.wishlist::showAction
+        _sylius:
+            section: admin
+            permission: true
+            template: "@MarkAppSyliusWishlistPlugin/admin/wishlist/show.html.twig"

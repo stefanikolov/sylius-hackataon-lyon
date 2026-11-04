@@ -1,0 +1,5 @@
+{% if data.public %}
+    <span class="badge bg-green-lt">{{ 'mark_app_sylius_wishlist.ui.public'|trans }}</span>
+{% else %}
+    <span class="badge bg-secondary-lt">{{ 'mark_app_sylius_wishlist.ui.private'|trans }}</span>
+{% endif %}

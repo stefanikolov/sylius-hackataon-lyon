@@ -1,0 +1,73 @@
+sylius_grid:
+    templates:
+        filter:
+            mark_app_wishlist_customer: '@SyliusAdmin/shared/grid/filter/string.html.twig'
+    grids:
+        mark_app_wishlist_admin_wishlist:
+            driver:
+                name: doctrine/orm
+                options:
+                    class: "%mark_app_sylius_wishlist.model.wishlist.class%"
+                    repository:
+                        method: createAdminGridQueryBuilder
+            sorting:
+                updatedAt: desc
+            fields:
+                name:
+                    type: twig
+                    label: sylius.ui.name
+                    path: .
+                    sortable: name
+                    options:
+                        template: "@MarkAppSyliusWishlistPlugin/admin/grid/field/name.html.twig"
+                owner:
+                    type: twig
+                    label: mark_app_sylius_wishlist.admin.owner
+                    path: .
+                    options:
+                        template: "@MarkAppSyliusWishlistPlugin/admin/grid/field/owner.html.twig"
+                itemCount:
+                    type: twig
+                    label: mark_app_sylius_wishlist.admin.products
+                    path: .
+                    options:
+                        template: "@MarkAppSyliusWishlistPlugin/admin/grid/field/item_count.html.twig"
+                        vars:
+                            th_class: "w-1 text-center"
+                public:
+                    type: twig
+                    label: mark_app_sylius_wishlist.ui.visibility
+                    path: .
+                    options:
+                        template: "@MarkAppSyliusWishlistPlugin/admin/grid/field/visibility.html.twig"
+                        vars:
+                            th_class: "w-1 text-center"
+                updatedAt:
+                    type: twig
+                    label: mark_app_sylius_wishlist.admin.updated
+                    sortable: ~
+                    options:
+                        template: "@SyliusAdmin/shared/grid/field/date.html.twig"
+                        vars:
+                            th_class: "w-1 text-center"
+            filters:
+                customer:
+                    type: mark_app_wishlist_customer
+                    label: mark_app_sylius_wishlist.admin.search_customer
+                name:
+                    type: string
+                    label: sylius.ui.name
+                registered:
+                    type: exists
+                    label: mark_app_sylius_wishlist.admin.registered_owner
+                    options:
+                        field: customer
+            actions:
+                item:
+                    show:
+                        type: show
+                        options:
+                            link:
+                                route: mark_app_sylius_wishlist_admin_wishlist_show
+                                parameters:
+                                    id: resource.id

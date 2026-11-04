@@ -2,6 +2,7 @@ mark_app_sylius_wishlist:
     form:
         name: List name
     ui:
+        wishlists: Wishlists
         wishlist: Wishlist
         my_wishlists: My wishlists
         my_wishlists_subtitle: Keep your favourite products in lists and share them with others.
@@ -43,3 +44,15 @@ mark_app_sylius_wishlist:
         back_to_lists: Back to my wishlists
         move: Move
         move_to: Move to another list
+    admin:
+        owner: Owner
+        products: Products
+        variant: Variant
+        added: Added
+        created: Created
+        updated: Last changed
+        guest: Guest
+        guest_hint: Created by a visitor without an account.
+        empty: This wishlist contains no products.
+        search_customer: Customer (name or e-mail)
+        registered_owner: Registered customer

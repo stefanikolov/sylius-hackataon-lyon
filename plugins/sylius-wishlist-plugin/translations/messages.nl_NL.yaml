@@ -2,6 +2,7 @@ mark_app_sylius_wishlist:
     form:
         name: Naam van de lijst
     ui:
+        wishlists: Wensenlijsten
         wishlist: Wensenlijst
         my_wishlists: Mijn wensenlijsten
         my_wishlists_subtitle: Bewaar je favoriete producten in lijsten en deel ze met anderen.
@@ -43,3 +44,15 @@ mark_app_sylius_wishlist:
         back_to_lists: Terug naar mijn wensenlijsten
         move: Verplaatsen
         move_to: Verplaats naar een andere lijst
+    admin:
+        owner: Eigenaar
+        products: Producten
+        variant: Variant
+        added: Toegevoegd
+        created: Aangemaakt
+        updated: Laatst gewijzigd
+        guest: Gast
+        guest_hint: Aangemaakt door een bezoeker zonder account.
+        empty: Deze wensenlijst bevat geen producten.
+        search_customer: Klant (naam of e-mail)
+        registered_owner: Geregistreerde klant

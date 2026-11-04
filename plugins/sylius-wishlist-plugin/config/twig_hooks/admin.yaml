@@ -1,0 +1,18 @@
+sylius_twig_hooks:
+    hooks:
+        'sylius_admin.wishlist.show.content':
+            sections:
+                template: '@MarkAppSyliusWishlistPlugin/admin/wishlist/show/content/sections.html.twig'
+                priority: 0
+
+        'sylius_admin.wishlist.show.content.header':
+            breadcrumbs:
+                template: '@SyliusAdmin/shared/crud/show/content/header/breadcrumbs.html.twig'
+                configuration:
+                    rendered_field: name
+                priority: 0
+
+        'sylius_admin.wishlist.show.content.header.title_block':
+            title:
+                template: '@MarkAppSyliusWishlistPlugin/admin/wishlist/show/content/header/title_block/title.html.twig'
+                priority: 0

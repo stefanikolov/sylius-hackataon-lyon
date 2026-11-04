@@ -7,6 +7,7 @@ namespace MarkApp\SyliusWishlistPlugin\DependencyInjection;
 use Sylius\Bundle\CoreBundle\DependencyInjection\PrependDoctrineMigrationsTrait;
 use Sylius\Bundle\ResourceBundle\DependencyInjection\Extension\AbstractResourceExtension;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -20,17 +21,17 @@ final class MarkAppSyliusWishlistExtension extends AbstractResourceExtension imp
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        /** @var array{driver: string, resources: array<string, mixed>} $config */
-        $config = $this->processConfiguration($this->getConfiguration([], $container), $configs);
-
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.xml');
-
-        $this->registerResources('mark_app_sylius_wishlist', $config['driver'], $config['resources'], $container);
     }
 
     public function prepend(ContainerBuilder $container): void
     {
+        // The resources are registered here, before the other extensions load: the administration grid refers to the
+        // parameter with the model class, and the grid extension would otherwise load before it exists.
+        $config = $this->getCurrentConfiguration($container);
+        $this->registerResources('mark_app_sylius_wishlist', $config['driver'], $config['resources'], $container);
+
         $this->prependDoctrineMigrations($container);
 
         // Limiters protect the write endpoints and the token lookups against bots and token guessing.
@@ -59,5 +60,19 @@ final class MarkAppSyliusWishlistExtension extends AbstractResourceExtension imp
         return [
             'Sylius\Bundle\CoreBundle\Migrations',
         ];
+    }
+
+    /**
+     * @return array{driver: string, resources: array<string, mixed>}
+     */
+    private function getCurrentConfiguration(ContainerBuilder $container): array
+    {
+        /** @var ConfigurationInterface $configuration */
+        $configuration = $this->getConfiguration([], $container);
+
+        /** @var array{driver: string, resources: array<string, mixed>} $config */
+        $config = $this->processConfiguration($configuration, $container->getExtensionConfig($this->getAlias()));
+
+        return $config;
     }
 }

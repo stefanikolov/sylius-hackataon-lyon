@@ -6,6 +6,7 @@ namespace MarkApp\SyliusWishlistPlugin\Doctrine\ORM;
 
 use MarkApp\SyliusWishlistPlugin\Entity\WishlistInterface;
 use MarkApp\SyliusWishlistPlugin\Repository\WishlistRepositoryInterface;
+use Doctrine\ORM\QueryBuilder;
 use Sylius\Bundle\ResourceBundle\Doctrine\ORM\EntityRepository;
 use Sylius\Component\Core\Model\CustomerInterface;
 
@@ -64,6 +65,14 @@ class WishlistRepository extends EntityRepository implements WishlistRepositoryI
         }
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult() > 0;
+    }
+
+    public function createAdminGridQueryBuilder(): QueryBuilder
+    {
+        return $this->createQueryBuilder('o')
+            ->addSelect('customer')
+            ->leftJoin('o.customer', 'customer')
+        ;
     }
 
     public function findOnePublicByShareToken(string $shareToken): ?WishlistInterface

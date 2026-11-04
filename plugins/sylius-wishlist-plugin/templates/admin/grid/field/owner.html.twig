@@ -1,0 +1,11 @@
+{# data is the wishlist. The owner is a customer, or nobody: a guest list has no customer. #}
+{% set customer = data.customer %}
+
+{% if customer is not null %}
+    <div {{ sylius_test_html_attribute('wishlist-owner') }}>
+        <a href="{{ path('sylius_admin_customer_show', {id: customer.id}) }}" class="fw-medium">{{ customer.fullName|default(customer.email) }}</a>
+        <div class="text-muted small">{{ customer.email }}</div>
+    </div>
+{% else %}
+    <span class="badge bg-secondary-lt" {{ sylius_test_html_attribute('wishlist-owner') }}>{{ 'mark_app_sylius_wishlist.admin.guest'|trans }}</span>
+{% endif %}

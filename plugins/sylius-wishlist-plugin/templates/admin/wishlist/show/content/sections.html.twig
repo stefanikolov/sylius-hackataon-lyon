@@ -1,0 +1,122 @@
+{% from '@SyliusAdmin/shared/helper/product_image.html.twig' import image %}
+{% import '@SyliusAdmin/shared/helper/money.html.twig' as money %}
+
+{# Read-only: this page shows a wishlist and offers no way to change it. #}
+{% set wishlist = hookable_metadata.context.resource %}
+{% set customer = wishlist.customer %}
+{% set count = wishlist.items|length %}
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card mb-3" {{ sylius_test_html_attribute('wishlist-details') }}>
+            <div class="card-body">
+                <div class="divide-y">
+                    <div class="row">
+                        <div class="col-12 col-md-4 fw-bold">{{ 'sylius.ui.name'|trans }}</div>
+                        <div class="col-12 col-md-8" {{ sylius_test_html_attribute('wishlist-name') }}>{{ wishlist.name }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-md-4 fw-bold">{{ 'mark_app_sylius_wishlist.admin.owner'|trans }}</div>
+                        <div class="col-12 col-md-8" {{ sylius_test_html_attribute('wishlist-owner') }}>
+                            {% if customer is not null %}
+                                <a href="{{ path('sylius_admin_customer_show', {id: customer.id}) }}">{{ customer.fullName|default(customer.email) }}</a>
+                            {% else %}
+                                <span class="badge bg-secondary-lt">{{ 'mark_app_sylius_wishlist.admin.guest'|trans }}</span>
+                                <span class="text-muted small ms-1">{{ 'mark_app_sylius_wishlist.admin.guest_hint'|trans }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if customer is not null %}
+                        <div class="row">
+                            <div class="col-12 col-md-4 fw-bold">{{ 'sylius.ui.email'|trans }}</div>
+                            <div class="col-12 col-md-8" {{ sylius_test_html_attribute('wishlist-owner-email') }}><a href="mailto:{{ customer.email }}">{{ customer.email }}</a></div>
+                        </div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-12 col-md-4 fw-bold">{{ 'mark_app_sylius_wishlist.ui.visibility'|trans }}</div>
+                        <div class="col-12 col-md-8">
+                            {% if wishlist.public %}
+                                <span class="badge bg-green-lt">{{ 'mark_app_sylius_wishlist.ui.public'|trans }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary-lt">{{ 'mark_app_sylius_wishlist.ui.private'|trans }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-md-4 fw-bold">{{ 'mark_app_sylius_wishlist.admin.created'|trans }}</div>
+                        <div class="col-12 col-md-8">{{ wishlist.createdAt|date('Y-m-d H:i') }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-md-4 fw-bold">{{ 'mark_app_sylius_wishlist.admin.updated'|trans }}</div>
+                        <div class="col-12 col-md-8">{{ wishlist.updatedAt|date('Y-m-d H:i') }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-md-4 fw-bold">{{ 'mark_app_sylius_wishlist.admin.products'|trans }}</div>
+                        <div class="col-12 col-md-8" {{ sylius_test_html_attribute('wishlist-item-count') }}>{{ count }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ 'mark_app_sylius_wishlist.admin.products'|trans }} ({{ count }})</h3>
+            </div>
+            {% if count == 0 %}
+                <div class="card-body text-muted" {{ sylius_test_html_attribute('wishlist-empty') }}>{{ 'mark_app_sylius_wishlist.admin.empty'|trans }}</div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table" {{ sylius_test_html_attribute('wishlist-products') }}>
+                        <thead>
+                            <tr>
+                                <th>{{ 'mark_app_sylius_wishlist.ui.product'|trans }}</th>
+                                <th>{{ 'mark_app_sylius_wishlist.admin.variant'|trans }}</th>
+                                <th>{{ 'mark_app_sylius_wishlist.ui.price'|trans }}</th>
+                                <th>{{ 'mark_app_sylius_wishlist.admin.added'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in wishlist.items %}
+                                {% set product = item.product %}
+                                {% set variant = item.variant %}
+                                <tr {{ sylius_test_html_attribute('wishlist-product') }}>
+                                    <td>
+                                        <div class="thumbnail-box">
+                                            <div class="thumbnail-box-image">{{ image(product) }}</div>
+                                            <div class="thumbnail-box-content">
+                                                <div class="mb-1">
+                                                    <a href="{{ path('sylius_admin_product_show', {id: product.id}) }}"><strong {{ sylius_test_html_attribute('wishlist-product-name') }}>{{ product.name }}</strong></a>
+                                                </div>
+                                                <div class="text-muted small">{{ product.code }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if variant is not null %}
+                                            <div class="text-muted small">{{ variant.code }}</div>
+                                            {% for option_value in variant.optionValues %}
+                                                <span class="badge bg-secondary-lt">{{ option_value.option.name }}: {{ option_value.value }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                    <td {{ sylius_test_html_attribute('wishlist-product-price') }}>
+                                        {# One price per channel the product is sold in. #}
+                                        {% if variant is not null %}
+                                            {% for channel in product.channels %}
+                                                {% set pricing = variant.channelPricingForChannel(channel) %}
+                                                {% if pricing is not null %}
+                                                    <div><span class="text-muted small">{{ channel.name }}</span> {{ money.format(pricing.price, channel.baseCurrency.code) }}</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.createdAt|date('Y-m-d H:i') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

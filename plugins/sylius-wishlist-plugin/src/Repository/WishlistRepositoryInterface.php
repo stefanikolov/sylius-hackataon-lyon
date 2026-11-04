@@ -27,6 +27,11 @@ interface WishlistRepositoryInterface extends RepositoryInterface
     public function hasNameForGuestToken(string $accessToken, string $name, ?int $excludedId = null): bool;
 
     /**
+     * The query behind the administration grid: every list, with its owner fetched in the same query.
+     */
+    public function createAdminGridQueryBuilder(): \Doctrine\ORM\QueryBuilder;
+
+    /**
      * Finds a wishlist by its share token, but only when it is public.
      */
     public function findOnePublicByShareToken(string $shareToken): ?WishlistInterface;
