@@ -30,8 +30,13 @@ final class WishlistProvider
     /** @var list<Wishlist>|null */
     private ?array $resolved = null;
 
-    /** Token generated during this request, before the cookie reaches the browser. */
+    /** Token generated during this request, before it reaches the client. */
     private ?string $newToken = null;
+
+    /** API mode: the guest token comes from a request header instead of the cookie, and no cookie is written. */
+    private bool $headerMode = false;
+
+    private ?string $headerToken = null;
 
     public function __construct(
         private readonly WishlistRepository $wishlistRepository,
@@ -39,6 +44,17 @@ final class WishlistProvider
         private readonly CustomerContextInterface $customerContext,
         private readonly RequestStack $requestStack,
     ) {
+    }
+
+    /**
+     * Switches to API mode for this request: the guest identity is the given token (or none), not the cookie.
+     * A cookie is never read or written, so a browser cannot be tricked into acting on an API call.
+     */
+    public function useGuestToken(?string $token): void
+    {
+        $this->headerMode = true;
+        $this->headerToken = null !== $token && '' !== $token ? $token : null;
+        $this->resolved = null;
     }
 
     /** @return list<Wishlist> all lists of the current visitor, default list first */
@@ -159,21 +175,35 @@ final class WishlistProvider
 
     private function cookieToken(): ?string
     {
+        if ($this->headerMode) {
+            return $this->headerToken;
+        }
+
         $token = $this->requestStack->getMainRequest()?->cookies->get(self::COOKIE_NAME);
 
         return is_string($token) && '' !== $token ? $token : null;
     }
 
-    /** The token that identifies this guest: the one from the cookie, or a new one that is sent back in the response. */
+    /**
+     * The token that identifies this guest. It is always one the server generated: either the token of the lists
+     * the visitor already owns, or a new random one (sent back in a cookie, or to API clients in the response).
+     * A token chosen by the client is never adopted.
+     */
     private function guestToken(): string
     {
-        $token = $this->cookieToken() ?? $this->newToken;
-        if (null === $token) {
-            $token = $this->newToken = bin2hex(random_bytes(24));
-            $this->requestStack->getMainRequest()?->attributes->set(self::REQUEST_ATTRIBUTE_SET_COOKIE, $token);
+        $existing = $this->resolved[0] ?? null;
+        if (null !== $existing && null !== $existing->getToken()) {
+            return $existing->getToken();
         }
 
-        return $token;
+        if (null === $this->newToken) {
+            $this->newToken = bin2hex(random_bytes(24));
+            if (!$this->headerMode) {
+                $this->requestStack->getMainRequest()?->attributes->set(self::REQUEST_ATTRIBUTE_SET_COOKIE, $this->newToken);
+            }
+        }
+
+        return $this->newToken;
     }
 
     /**
@@ -210,7 +240,9 @@ final class WishlistProvider
         }
 
         $this->entityManager->flush();
-        $this->requestStack->getMainRequest()?->attributes->set(self::REQUEST_ATTRIBUTE_CLEAR_COOKIE, true);
+        if (!$this->headerMode) {
+            $this->requestStack->getMainRequest()?->attributes->set(self::REQUEST_ATTRIBUTE_CLEAR_COOKIE, true);
+        }
 
         return $customerLists;
     }

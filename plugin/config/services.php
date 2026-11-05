@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use Hackathon\SyliusWishlistPlugin\Command\DemoDataCommand;
 use Hackathon\SyliusWishlistPlugin\Controller\Admin\WishlistController as AdminWishlistController;
+use Hackathon\SyliusWishlistPlugin\Controller\Api\WishlistApiController;
 use Hackathon\SyliusWishlistPlugin\Controller\WishlistController;
 use Hackathon\SyliusWishlistPlugin\EventListener\AdminMenuListener;
 use Hackathon\SyliusWishlistPlugin\EventListener\WishlistCookieListener;
 use Hackathon\SyliusWishlistPlugin\Provider\WishlistProvider;
 use Hackathon\SyliusWishlistPlugin\Repository\WishlistRepository;
+use Hackathon\SyliusWishlistPlugin\Service\WishlistManager;
 use Hackathon\SyliusWishlistPlugin\Twig\WishlistExtension;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -21,6 +23,17 @@ return static function (Symfony\Component\DependencyInjection\Loader\Configurato
     $services->set(WishlistProvider::class);
     $services->set(WishlistCookieListener::class);
     $services->set(WishlistExtension::class);
+
+    // The business operations shared by the storefront and the API.
+    $services->set(WishlistManager::class)
+        ->arg('$availabilityChecker', service('sylius.checker.inventory.availability'));
+
+    // JSON API under /api/v2/shop/wishlists.
+    $services->set(WishlistApiController::class)
+        ->arg('$variantRepository', service('sylius.repository.product_variant'))
+        ->arg('$productRepository', service('sylius.repository.product'))
+        ->public()
+        ->tag('controller.service_arguments');
     $services->set(AdminMenuListener::class);
 
     // Example data for the administration demo: php bin/console hackathon:wishlist:demo-data
@@ -46,7 +59,6 @@ return static function (Symfony\Component\DependencyInjection\Loader\Configurato
         ->arg('$priceCalculator', service('sylius.calculator.product_variant_price'))
         ->arg('$variantRepository', service('sylius.repository.product_variant'))
         ->arg('$channelContext', service('sylius.context.channel'))
-        ->arg('$availabilityChecker', service('sylius.checker.inventory.availability'))
         ->public()
         ->tag('controller.service_arguments');
 };

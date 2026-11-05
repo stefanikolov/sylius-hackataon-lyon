@@ -7,13 +7,13 @@ namespace Hackathon\SyliusWishlistPlugin\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use Hackathon\SyliusWishlistPlugin\Entity\Wishlist;
 use Hackathon\SyliusWishlistPlugin\Provider\WishlistProvider;
+use Hackathon\SyliusWishlistPlugin\Service\WishlistManager;
 use Sylius\Bundle\OrderBundle\Adder\CartItemAdderInterface;
 use Sylius\Bundle\OrderBundle\Factory\AddToCartCommandFactoryInterface;
 use Sylius\Component\Channel\Context\ChannelContextInterface;
 use Sylius\Component\Core\Calculator\ProductVariantPricesCalculatorInterface;
 use Sylius\Component\Core\Factory\CartItemFactoryInterface;
 use Sylius\Component\Core\Model\ProductVariantInterface;
-use Sylius\Component\Inventory\Checker\AvailabilityCheckerInterface;
 use Sylius\Component\Order\Context\CartContextInterface;
 use Sylius\Component\Order\Modifier\OrderItemQuantityModifierInterface;
 use Sylius\Resource\Doctrine\Persistence\RepositoryInterface;
@@ -45,7 +45,7 @@ final class WishlistController extends AbstractController
         private readonly ProductVariantPricesCalculatorInterface $priceCalculator,
         private readonly RepositoryInterface $variantRepository,
         private readonly ChannelContextInterface $channelContext,
-        private readonly AvailabilityCheckerInterface $availabilityChecker,
+        private readonly WishlistManager $manager,
         private readonly ValidatorInterface $validator,
         private readonly TranslatorInterface $translator,
     ) {
@@ -98,8 +98,7 @@ final class WishlistController extends AbstractController
         if ($this->isTokenValid($request)) {
             $name = $this->validName((string) $request->request->get('name'), $wishlist);
             if (null !== $name) {
-                $wishlist->setName($name);
-                $this->entityManager->flush();
+                $this->manager->rename($wishlist, $name);
                 $this->addFlash('success', 'hackathon_wishlist.flash.renamed');
             }
         }
@@ -124,7 +123,7 @@ final class WishlistController extends AbstractController
             return $this->redirectToRoute('hackathon_wishlist_show', ['id' => $id]);
         }
 
-        $this->wishlistProvider->deleteWishlist($wishlist);
+        $this->manager->delete($wishlist);
         $this->addFlash('success', 'hackathon_wishlist.flash.deleted');
 
         return $this->redirectToRoute('hackathon_wishlist_index');
@@ -152,7 +151,7 @@ final class WishlistController extends AbstractController
         // and decide which variant is saved; the variant id in the URL is only the default one.
         $selectedOptions = $request->request->all('options');
         if ([] !== $selectedOptions) {
-            $variant = $this->resolveVariantByOptions($variant, $selectedOptions);
+            $variant = $this->manager->resolveVariantByOptions($variant, $selectedOptions);
             if (null === $variant) {
                 $this->addFlash('error', 'hackathon_wishlist.flash.not_found');
 
@@ -172,8 +171,7 @@ final class WishlistController extends AbstractController
             $wishlist = $this->wishlistProvider->getWishlist(null, create: true);
         }
 
-        if ($wishlist->addVariant($variant)) {
-            $this->entityManager->flush();
+        if ($this->manager->add($wishlist, $variant)) {
             $this->addFlash('success', $this->translator->trans('hackathon_wishlist.flash.added_to', ['%name%' => $wishlist->getName()], 'flashes'));
         } else {
             $this->addFlash('info', $this->translator->trans('hackathon_wishlist.flash.already_added_to', ['%name%' => $wishlist->getName()], 'flashes'));
@@ -192,8 +190,7 @@ final class WishlistController extends AbstractController
 
         $wishlist = $item->getWishlist();
         if ($this->isTokenValid($request)) {
-            $wishlist->removeItem($item);
-            $this->entityManager->flush();
+            $this->manager->remove($item);
             $this->addFlash('success', 'hackathon_wishlist.flash.removed');
         }
 
@@ -221,9 +218,7 @@ final class WishlistController extends AbstractController
             return $this->redirectToRoute('hackathon_wishlist_show', ['id' => $source->getId()]);
         }
 
-        $target->addVariant($item->getVariant());
-        $source->removeItem($item);
-        $this->entityManager->flush();
+        $this->manager->move($item, $target);
         $this->addFlash('success', $this->translator->trans('hackathon_wishlist.flash.moved', ['%name%' => $target->getName()], 'flashes'));
 
         return $this->redirectToRoute('hackathon_wishlist_show', ['id' => $source->getId()]);
@@ -292,7 +287,7 @@ final class WishlistController extends AbstractController
                 'product' => $variant->getProduct(),
                 'price' => $this->priceCalculator->calculate($variant, $context),
                 'original_price' => $this->priceCalculator->calculateOriginal($variant, $context),
-                'available' => $this->isPurchasable($variant),
+                'available' => $this->manager->isPurchasable($variant),
             ];
         }
 
@@ -320,22 +315,11 @@ final class WishlistController extends AbstractController
      */
     private function validName(string $raw, ?Wishlist $renaming = null): ?string
     {
-        $name = trim((string) preg_replace('/^[\s\p{Z}]+|[\s\p{Z}]+$/u', '', $raw));
-
-        if ('' === $name) {
-            $this->addFlash('error', 'hackathon_wishlist.flash.name_required');
-
-            return null;
-        }
-
-        if (mb_strlen($name) > Wishlist::MAX_NAME_LENGTH) {
-            $this->addFlash('error', 'hackathon_wishlist.flash.name_too_long');
-
-            return null;
-        }
-
-        if ($this->wishlistProvider->hasName($name, $renaming)) {
-            $this->addFlash('error', 'hackathon_wishlist.flash.name_taken');
+        // The rules live in WishlistManager and are shared with the API.
+        $name = $this->manager->normalizeName($raw);
+        $error = $this->manager->validateName($name, $renaming);
+        if (null !== $error) {
+            $this->addFlash('error', 'hackathon_wishlist.flash.' . $error);
 
             return null;
         }
@@ -345,7 +329,7 @@ final class WishlistController extends AbstractController
 
     private function addVariantToCart(ProductVariantInterface $variant): bool
     {
-        if (!$this->isPurchasable($variant)) {
+        if (!$this->manager->isPurchasable($variant)) {
             return false;
         }
 
@@ -363,51 +347,6 @@ final class WishlistController extends AbstractController
         $this->cartItemAdder->add($command);
 
         return true;
-    }
-
-    private function isPurchasable(ProductVariantInterface $variant): bool
-    {
-        $product = $variant->getProduct();
-
-        return $variant->isEnabled()
-            && null !== $product
-            && $product->isEnabled()
-            && $this->availabilityChecker->isStockAvailable($variant);
-    }
-
-    /**
-     * Finds the enabled variant of the same product whose option values match the selection.
-     *
-     * @param array<array-key, mixed> $selectedOptions option code => option value code
-     */
-    private function resolveVariantByOptions(ProductVariantInterface $variant, array $selectedOptions): ?ProductVariantInterface
-    {
-        $product = $variant->getProduct();
-        if (null === $product) {
-            return null;
-        }
-
-        foreach ($product->getEnabledVariants() as $candidate) {
-            $values = [];
-            foreach ($candidate->getOptionValues() as $optionValue) {
-                $values[$optionValue->getOptionCode()] = $optionValue->getCode();
-            }
-
-            $matches = true;
-            foreach ($selectedOptions as $optionCode => $valueCode) {
-                if (!is_string($valueCode) || ($values[(string) $optionCode] ?? null) !== $valueCode) {
-                    $matches = false;
-
-                    break;
-                }
-            }
-
-            if ($matches) {
-                return $candidate;
-            }
-        }
-
-        return null;
     }
 
     /** Goes back to the page the visitor came from, but only when it is on this same site. */
